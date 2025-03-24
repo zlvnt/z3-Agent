@@ -1,0 +1,12 @@
+.env
+model_rf.pkl
+vectorizer.pkl
+conversations.json
+personality.json
+comments_for_labeling.csv
+labeled_comments.csv
+
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
