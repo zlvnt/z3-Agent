@@ -16,18 +16,21 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel("gemini-1.5-pro")
 
+base_dir = os.path.dirname(os.path.abspath(__file__))
+PERSONALITY_FILE = os.path.join(base_dir, "personality.json")
 
 # LOAD PERSONALITY
 def load_personality():
     try:
-        with open("personality.json", "r", encoding="utf-8") as file:
+        with open(PERSONALITY_FILE, "r", encoding="utf-8") as file:
             return json.load(file)
-    except (FileNotFoundError, json.JSONDecodeError):
-        print("Error: Gagal membaca file personality.json.")
-        return {}
+    except FileNotFoundError:
+        print("❌ File personality.json tidak ditemukan.")
+    except json.JSONDecodeError as e:
+        print(f"❌ JSON Error: {e}")
+    return {}
 
 def get_post_data(post_id):
-    """Mengambil data postingan berdasarkan post_id."""
     personality_data = load_personality()
     posts = personality_data.get("posts", [])
     for post in posts:
@@ -38,20 +41,20 @@ def get_post_data(post_id):
 # CAPTION
 def generate_caption(image_description="", content_type="lifestyle"):
     personality_data = load_personality()
-    
+
     if not personality_data:
         print("❌ Error: JSON personality tidak bisa dimuat.")
         return "Caption tidak dapat dibuat."
 
     prompt_template = personality_data.get("prompts", {}).get("caption", "")
-    
+
     if not prompt_template:
         print("❌ Error: Prompt caption tidak ditemukan dalam JSON.")
         return "Caption tidak dapat dibuat."
 
     # TONE (IF NOT = LIFESTYLE)
     tone = personality_data.get("tone", {}).get(content_type, personality_data.get("tone", {}).get("lifestyle", ""))
-    
+
     # Format prompt
     prompt = prompt_template.format(
         identity_name=personality_data.get("identity", {}).get("name", ""),
@@ -63,20 +66,19 @@ def generate_caption(image_description="", content_type="lifestyle"):
         do_rules="\n  - ".join(personality_data.get("rules", {}).get("do", [])),
         dont_rules="\n  - ".join(personality_data.get("rules", {}).get("dont", []))
     )
-    
+
     try:
         response = model.generate_content(prompt)
         caption = response.text.strip() if response and response.text else "AI tidak dapat menghasilkan caption."
-        
+
         # Debugging Output
         print(f"📝 Caption Generated: {caption}")
-        
+
         return caption
     except Exception as e:
         print("❌ Error AI:", str(e))
         return "Caption tidak dapat dibuat."
-    
-    
+
 def upload_photo(image_url, image_description, content_type="edukasi"):
     """Mengunggah foto ke Instagram dan menyimpan post ID jika berhasil."""
     print("📤 Mengunggah foto ke Instagram...")
@@ -103,7 +105,7 @@ def upload_photo(image_url, image_description, content_type="edukasi"):
     creation_id = response["id"]
     print(f"✅ Foto berhasil diunggah dengan ID: {creation_id}")
 
-    # Lanjutkan dengan publikasi foto
+    # publikasi foto
     publish_url = f"https://graph.facebook.com/v18.0/{ACCOUNT_ID}/media_publish"
     try:
         publish_response = requests.post(publish_url, data={
@@ -129,7 +131,7 @@ def upload_photo(image_url, image_description, content_type="edukasi"):
 # SIMPAN DATA
 def save_post_data(post_id, caption):
     personality_data = load_personality()
-    
+
     if "posts" not in personality_data:
         personality_data["posts"] = []
 
@@ -138,28 +140,26 @@ def save_post_data(post_id, caption):
         "post_id": post_id,
         "caption": caption
     }
-    
+
     personality_data["posts"].append(new_post)
 
     # Simpan ke JSON
-    with open("personality.json", "w", encoding="utf-8") as file:
+    with open(PERSONALITY_FILE, "w", encoding="utf-8") as file:
         json.dump(personality_data, file, indent=2)
 
     print(f"📝 Postingan disimpan: {post_id} - {caption}")
-    
-CONVERSATION_FILE = "conversations.json"
-    
+
+CONVERSATION_FILE = os.path.join(base_dir, "conversations.json")
 # LOAD PERCAKAPAN
 def load_conversations():
     if not os.path.exists(CONVERSATION_FILE):
         return {"conversations": {}}
-    
+
     with open(CONVERSATION_FILE, "r", encoding="utf-8") as file:
         try:
             return json.load(file)
         except json.JSONDecodeError:
             return {"conversations": {}}
-        
 
 #SIMPAN PERCAKAPAN
 def save_conversation(post_id, comment_id, user, comment, reply):
@@ -191,7 +191,6 @@ def save_conversation(post_id, comment_id, user, comment, reply):
             file.flush()
     except Exception as e:
         print(f"❌ Gagal menyimpan percakapan: {str(e)}")
-
 
 # GENERATE KOMENTER
 def generate_reply(comment, post_id, comment_id, username):
@@ -258,12 +257,11 @@ def generate_reply(comment, post_id, comment_id, username):
 
     return ai_reply
 
-
 # use
 if __name__ == "__main__":
-    image_url = "https://files.oaiusercontent.com/file-JLGoESgvt4XuoVo42SE679?se=2025-03-05T11%3A43%3A03Z&sp=r&sv=2024-08-04&sr=b&rscc=max-age%3D604800%2C%20immutable%2C%20private&rscd=attachment%3B%20filename%3Dd74e0d01-60fe-46f8-b087-6150fc3cfcc0.webp&sig=zOi3y95WBcv0XrIma17gmxXQ/HJno5B%2BOuKK2yXnkms%3D"
-    image_description = "Hanya foto sekumpulan orang yang berbuka puasa, anda hanya harus mengingatkan untuk berbuka puasa hehe"  
+    image_url = "https://drive.google.com/thumbnail?id=1mMH2DDZDRZauzZApU12wSlnjfdDrthYM&sz=w1000"
+    image_description = "buat saja caption nya 'teh botol enak(emoticon ngiler)', jangan yang lain "  
     content_type = "lifestyle"  
-    
+
     # Unggah foto ke Instagram
     post_id = upload_photo(image_url, image_description, content_type)
