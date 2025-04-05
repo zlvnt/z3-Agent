@@ -5,6 +5,7 @@ import random
 import time
 from dotenv import load_dotenv
 import google.generativeai as genai
+from rf_model import analyze_sentiment
 
 # API
 load_dotenv()
