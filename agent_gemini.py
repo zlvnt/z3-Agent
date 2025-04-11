@@ -15,7 +15,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # AI API
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-pro")
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
 PERSONALITY_FILE = os.path.join(base_dir, "personality.json")
@@ -69,7 +69,10 @@ def generate_caption(image_description="", content_type="lifestyle"):
     )
 
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=[{"role": "user", "parts": [{"text": prompt}]}]
+        )
         caption = response.text.strip() if response and response.text else "AI tidak dapat menghasilkan caption."
 
         # Debugging Output
@@ -163,7 +166,7 @@ def load_conversations():
             return {"conversations": {}}
 
 #SIMPAN PERCAKAPAN
-def save_conversation(post_id, comment_id, user, comment, reply):
+def save_conversation(post_id, comment_id, user, comment, reply, sentiment):
     conversations = load_conversations()
 
     # Buat struktur JSON jika belum ada
@@ -183,7 +186,8 @@ def save_conversation(post_id, comment_id, user, comment, reply):
     conversations["conversations"][post_id][comment_id].append({
         "user": user,
         "comment": comment,
-        "reply": reply
+        "reply": reply,
+        "sentiment": sentiment
     })
 
     try:
@@ -198,6 +202,8 @@ def generate_reply(comment, post_id, comment_id, username):
 
     # Load personality.json
     personality_data = load_personality()
+
+    sentiment = analyze_sentiment(comment)
 
     # Debug
     post_data = get_post_data(post_id)
@@ -244,7 +250,10 @@ def generate_reply(comment, post_id, comment_id, username):
 
     # JIKA AI GAGAL BALES
     try:
-        response = model.generate_content(prompt)
+        response = client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=[{"role": "user", "parts": [{"text": prompt}]}]
+        )
         ai_reply = response.text.strip() if response and response.text and response.text.strip() else "AI gagal merespons."
     except Exception as e:
         print(f"❌ Error saat generate reply: {str(e)}")
@@ -253,8 +262,8 @@ def generate_reply(comment, post_id, comment_id, username):
     # Debugging
     print(f"🤖 AI Reply Generated: {ai_reply}")
 
-    # Simpan percakapan agar bisa digunakan untuk balasan berikutnya
-    save_conversation(post_id, comment_id, username, comment, ai_reply)
+    # Simpan percakapan
+    save_conversation(post_id, comment_id, username, comment, ai_reply, sentiment)
 
     return ai_reply
 
