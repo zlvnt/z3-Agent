@@ -4,7 +4,6 @@ import json
 import random
 import time
 from dotenv import load_dotenv
-import google.generativeai as genai
 from rf_model import analyze_sentiment
 
 # API
@@ -14,7 +13,7 @@ ACCOUNT_ID = os.getenv("INSTAGRAM_ACCOUNT_ID")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 # AI API
-genai.configure(api_key=GEMINI_API_KEY)
+from google import genai
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -39,8 +38,15 @@ def get_post_data(post_id):
             return post
     return None
 
+def get_previous_caption(current_post_id):
+    posts = load_personality().get("posts", [])
+    for i, post in enumerate(posts):
+        if post["post_id"] == current_post_id and i > 0:
+            return posts[i - 1]["caption"]
+    return ""
+
 # CAPTION
-def generate_caption(image_description="", content_type="lifestyle"):
+def generate_caption(image_description="", content_type="lifestyle", previous_caption=""):
     personality_data = load_personality()
 
     if not personality_data:
@@ -65,12 +71,13 @@ def generate_caption(image_description="", content_type="lifestyle"):
         image_description=image_description or "Tidak ada deskripsi gambar. Buat caption bebas berdasarkan tren sosial media dan niche yang sesuai.",
         tone=tone,
         do_rules="\n  - ".join(personality_data.get("rules", {}).get("do", [])),
-        dont_rules="\n  - ".join(personality_data.get("rules", {}).get("dont", []))
+        dont_rules="\n  - ".join(personality_data.get("rules", {}).get("dont", [])),
+        previous_caption=previous_caption
     )
 
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="models/gemini-1.5-pro",
             contents=[{"role": "user", "parts": [{"text": prompt}]}]
         )
         caption = response.text.strip() if response and response.text else "AI tidak dapat menghasilkan caption."
@@ -245,13 +252,14 @@ def generate_reply(comment, post_id, comment_id, username):
         context=context,
         username=username,
         comment=comment,
-        tone=tone
+        tone=tone,
+        sentiment=sentiment 
     )
 
     # JIKA AI GAGAL BALES
     try:
         response = client.models.generate_content(
-            model="gemini-2.0-flash",
+            model="models/gemini-1.5-pro",
             contents=[{"role": "user", "parts": [{"text": prompt}]}]
         )
         ai_reply = response.text.strip() if response and response.text and response.text.strip() else "AI gagal merespons."
@@ -269,8 +277,8 @@ def generate_reply(comment, post_id, comment_id, username):
 
 # use
 if __name__ == "__main__":
-    image_url = "https://drive.google.com/thumbnail?id=1mMH2DDZDRZauzZApU12wSlnjfdDrthYM&sz=w1000"
-    image_description = "buat saja caption nya 'teh botol enak(emoticon ngiler)', jangan yang lain "  
+    image_url = "https://i.ibb.co.com/qL9MkcV2/Chat-GPT-Image-Apr-11-2025-02-58-06-PM.png"
+    image_description = "sebuah lukisan kuno"  
     content_type = "lifestyle"  
 
     # Unggah foto ke Instagram
