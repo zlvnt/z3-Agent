@@ -70,8 +70,8 @@ def generate_caption(image_description="", content_type="lifestyle", previous_ca
         identity_style=personality_data.get("identity", {}).get("style", ""),
         image_description=image_description or "Tidak ada deskripsi gambar. Buat caption bebas berdasarkan tren sosial media dan niche yang sesuai.",
         tone=tone,
-        do_rules="\n  - ".join(personality_data.get("rules", {}).get("do", [])),
-        dont_rules="\n  - ".join(personality_data.get("rules", {}).get("dont", [])),
+        caption_do_rules="\n  - " + "\n  - ".join(personality_data.get("rules", {}).get("caption_do", [])),
+        dont_rules="\n  - " + "\n  - ".join(personality_data.get("rules", {}).get("dont", [])),
         previous_caption=previous_caption
     )
 
@@ -161,6 +161,7 @@ def save_post_data(post_id, caption):
     print(f"📝 Postingan disimpan: {post_id} - {caption}")
 
 CONVERSATION_FILE = os.path.join(base_dir, "conversations.json")
+
 # LOAD PERCAKAPAN
 def load_conversations():
     if not os.path.exists(CONVERSATION_FILE):
@@ -218,7 +219,7 @@ def generate_reply(comment, post_id, comment_id, username):
         return "Eror gua coo"
 
     post_caption = post_data.get("caption", "Tanpa konteks.")
-    tone = post_data.get("tone", "santai")
+    tone = post_data.get("tone", "")
 
     # Ambil riwayat percakapan sebelumnya
     conversations = load_conversations()
@@ -280,9 +281,9 @@ def generate_reply(comment, post_id, comment_id, username):
 
 # use
 if __name__ == "__main__":
-    image_url = "https://i.ibb.co.com/qL9MkcV2/Chat-GPT-Image-Apr-11-2025-02-58-06-PM.png"
-    image_description = "sebuah lukisan kuno"  
-    content_type = "lifestyle"  
+    image_url = "https://i.imgur.com/IzT2DVR.png"
+    image_description = "developer cuma mau testing komentar doang kok"  
+    content_type = "edukasi"  
 
     # Unggah foto ke Instagram
     post_id = upload_photo(image_url, image_description, content_type)
