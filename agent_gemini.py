@@ -207,16 +207,15 @@ def save_conversation(post_id, comment_id, user, comment, reply, sentiment):
 # GENERATE KOMENTER
 def generate_reply(comment, post_id, comment_id, username):
 
-    # Load personality.json
+    # Load personality
     personality_data = load_personality()
-
     sentiment = analyze_sentiment(comment)
 
     # Debug
     post_data = get_post_data(post_id)
     if not post_data:
         print("⚠️ Post data tidak ditemukan, AI menggunakan balasan default.")
-        return "Lagi turu 😊"
+        return "Eror gua coo"
 
     post_caption = post_data.get("caption", "Tanpa konteks.")
     tone = post_data.get("tone", "santai")
@@ -225,7 +224,7 @@ def generate_reply(comment, post_id, comment_id, username):
     conversations = load_conversations()
     conversation_history = conversations.get("conversations", {}).get(post_id, {}).get(comment_id, [])
 
-    # Limit Percakapan
+    # Limit Menyimpan Komentar
     history_limit = 5
     context = ""
     if conversation_history:
@@ -238,9 +237,11 @@ def generate_reply(comment, post_id, comment_id, username):
     identity = personality_data.get("identity", {})
     identxt = json.dumps(identity, indent=2, ensure_ascii=False)
 
-    # Ambil prompt dari JSON
-    reply_prompt_template = personality_data.get("prompts", {}).get("reply", "")
+    reply_do_rules = "\n  - " + "\n  - ".join(personality_data.get("rules", {}).get("reply_do", []))
+    dont_rules = "\n  - " + "\n  - ".join(personality_data.get("rules", {}).get("dont", []))
 
+    # Prompt dari JSON
+    reply_prompt_template = personality_data.get("prompts", {}).get("reply", "")
     if not reply_prompt_template:
         print("⚠️ Template prompt tidak ditemukan di JSON.")
         return "AI tidak bisa merespons saat ini."
@@ -253,7 +254,9 @@ def generate_reply(comment, post_id, comment_id, username):
         username=username,
         comment=comment,
         tone=tone,
-        sentiment=sentiment 
+        sentiment=sentiment,
+        reply_do_rules=reply_do_rules,
+        dont_rules=dont_rules
     )
 
     # JIKA AI GAGAL BALES
