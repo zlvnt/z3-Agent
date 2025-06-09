@@ -17,7 +17,7 @@ from google import genai
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 base_dir = os.path.dirname(os.path.abspath(__file__))
-PERSONALITY_FILE = os.path.join(base_dir, "personality.json")
+PERSONALITY_FILE = os.path.join(base_dir, "personality1.json")
 
 # LOAD PERSONALITY
 def load_personality():
@@ -281,8 +281,8 @@ def generate_reply(comment, post_id, comment_id, username):
 
 # use
 if __name__ == "__main__":
-    image_url = "https://i.imgur.com/IzT2DVR.png"
-    image_description = "developer cuma mau testing komentar doang kok"  
+    image_url = "https://i.imgur.com/p6AyVpk.png"
+    image_description = "testing part 2"  
     content_type = "edukasi"  
 
     # Unggah foto ke Instagram
