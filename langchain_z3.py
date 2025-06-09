@@ -1,6 +1,6 @@
 import os
+import json
 from dotenv import load_dotenv
-
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.vectorstores import FAISS
 from langchain_community.tools.duckduckgo import DuckDuckGoSearchRun
@@ -9,18 +9,22 @@ from langchain.agents import initialize_agent, Tool
 from langchain.memory import ConversationBufferMemory
 from sentence_transformers import SentenceTransformer
 
-# Load API Key
+# Load .env & Gemini Key
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-# LLM & Embedding
+# Load personality JSON
+with open("personality1.json") as f:
+    personality = json.load(f)
+
+# Inisialisasi Gemini LLM
 llm = ChatGoogleGenerativeAI(
     model="gemini-1.5-pro",
     google_api_key=GEMINI_API_KEY,
     temperature=0.3
 )
 
-# Embed
+# Embedding (masih sentence-transformers)
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
 vector_store = FAISS.from_texts(["dummy"], embedder)
 retriever = vector_store.as_retriever(
@@ -38,15 +42,16 @@ rag_chain = RetrievalQA.from_chain_type(
     return_source_documents=False
 )
 
-# Daftar tools LangChain
+# LangChain Tools
 tools = [
     Tool(name="web_search", func=search_tool, description="Search the web"),
     Tool(name="cache_retriever", func=rag_chain.run, description="Retrieve from cached vector store")
 ]
 
-# Inisialisasi Agent dengan memory percakapan
+# Memory
 memory = ConversationBufferMemory(memory_key="chat_history")
 
+# Agent
 agent = initialize_agent(
     tools=tools,
     llm=llm,
@@ -55,5 +60,6 @@ agent = initialize_agent(
 )
 
 def generate_reply(comment, caption, username):
-    prompt = f"""IG caption: {caption}\nKomentar: {comment}\nUsername: {username}\nJawab relevan & ringkas."""
+    persona = personality["persona"]  # atau "reply", dsb
+    prompt = f"""{persona}\n\nCaption IG: {caption}\nKomentar user: {comment}\nUsername: {username}\nBalas singkat, kontekstual, dan sesuai karakter z3."""
     return agent.invoke({"input": prompt})['output']
