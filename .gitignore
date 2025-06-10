@@ -3,7 +3,6 @@ model_rf.pkl
 vectorizer.pkl
 conversations.json
 personality.json
-personality1.json
 comments_for_labeling.csv
 labeled_comments.csv
 
