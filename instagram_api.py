@@ -2,11 +2,6 @@ import requests
 from config import ACCESS_TOKEN
 
 def upload_reply(comment_id, message):
-    """
-    Membalas komentar di Instagram.
-    - comment_id: ID komentar yang ingin dibalas (atau parent)
-    - message: Teks balasan
-    """
     url = f"https://graph.facebook.com/v18.0/{comment_id}/replies"
     payload = {
         "message": message,
