@@ -13,11 +13,10 @@ from config import GEMINI_API_KEY
 import personality as persona
 import conversation as convo
 
-# --- Optional sentiment model (fallback ke "Netral" jika tidak ada) ---
 try:
-    from rf_model import analyze_sentiment  # type: ignore
-except ImportError:  # pragma: no cover
-    def analyze_sentiment(_text: str) -> str:  # noqa: D401
+    from rf_model import analyze_sentiment
+except ImportError:
+    def analyze_sentiment(_text: str) -> str:
         """Fallback dummy sentiment analyzer."""
         return "Netral"
 
@@ -25,14 +24,12 @@ except ImportError:  # pragma: no cover
 #  LLM & TOOLING INITIALISATION
 # ----------------------------------------------------------------------------
 
-# Large‑language model (Gemini‑1.5‑pro via LangChain wrapper)
 llm = ChatGoogleGenerativeAI(
     model="gemini-1.5-pro",
     google_api_key=GEMINI_API_KEY,
     temperature=0.4,
 )
 
-# Minimal RAG scaffold (can be expanded later)
 embedder = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 vector_store = FAISS.from_texts(["dummy"], embedder)
 retriever = vector_store.as_retriever(
@@ -45,10 +42,10 @@ rag_chain = RetrievalQA.from_chain_type(
     return_source_documents=False,
 )
 
-# External web search tool (optional — dipanggil via agent jika dibutuhkan)
+# External web search
 search_tool = DuckDuckGoSearchRun()
 
-# LangChain agent setup (tools + memory)
+# LangChain agent setup
 _tools = [
     Tool(name="web_search", func=search_tool, description="Search the Web (DuckDuckGo)"),
     Tool(name="cache_retriever", func=rag_chain.run, description="Retrieve cached knowledge base"),
@@ -129,7 +126,6 @@ def generate_reply(comment: str, post_id: str, comment_id: str, username: str) -
     convo.append_comment(post_id, comment_id, username, comment, ai_reply)
 
     return ai_reply
-
 
 # Convenience for interactive testing -----------------------------------------
 if __name__ == "__main__":
