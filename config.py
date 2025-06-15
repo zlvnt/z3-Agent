@@ -7,7 +7,8 @@ load_dotenv()
 ACCESS_TOKEN = os.getenv("INSTAGRAM_ACCESS_TOKEN")
 VERIFY_TOKEN = os.getenv("VERIFY_TOKEN", "1234z")
 
-PERSONALITY_PATH = os.getenv("PERSONALITY_PATH", "personality1.json")
+base_dir = os.path.abspath(os.path.dirname(__file__))
+PERSONALITY_PATH = os.getenv("PERSONALITY_PATH", os.path.join(base_dir, "personality1.json"))
 CONVERSATIONS_PATH = os.getenv("CONVERSATIONS_PATH", "conversations.json")
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")

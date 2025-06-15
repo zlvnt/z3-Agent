@@ -9,7 +9,6 @@ app = Flask(__name__)
 
 @app.route("/webhook", methods=["GET", "POST"])
 def webhook():
-    """Endpoint yang didaftarkan ke Instagram Webhook."""
 
     if request.method == "GET":
         token     = request.args.get("hub.verify_token")
