@@ -17,7 +17,6 @@ try:
     from rf_model import analyze_sentiment
 except ImportError:
     def analyze_sentiment(_text: str) -> str:
-        """Fallback dummy sentiment analyzer."""
         return "Netral"
 
 # ----------------------------------------------------------------------------
@@ -70,7 +69,6 @@ _REPLY_PROMPT_TEMPLATE = persona.get_prompt(_PERSONALITY_DATA, "reply")
 
 
 def _build_context(post_id: str, comment_id: str, limit: int = 5) -> str:
-    """Mengambil riwayat percakapan (maks `limit` pesan terakhir) untuk konteks."""
     history = convo.get_comment_history(post_id, comment_id)
     if not history:
         return ""
@@ -88,7 +86,6 @@ def _build_context(post_id: str, comment_id: str, limit: int = 5) -> str:
 # ----------------------------------------------------------------------------
 
 def generate_reply(comment: str, post_id: str, comment_id: str, username: str) -> str:
-    """Generate AI reply that mirrors the behaviour of `agent_gemini.generate_reply`."""
 
     # Sentiment & basic post info ------------------------------------------------
     sentiment = analyze_sentiment(comment)
@@ -112,13 +109,12 @@ def generate_reply(comment: str, post_id: str, comment_id: str, username: str) -
 
     # LLM call ------------------------------------------------------------------
     try:
-        # LangChain agent gives tool‑use flexibility if prompt memicu panggilan tool
         response = agent.invoke({"input": prompt})
         ai_reply = response.get("output") if isinstance(response, dict) else str(response)
-    except Exception:  # pragma: no cover
+    except Exception: 
         try:
             ai_reply = llm.predict(prompt)
-        except Exception as err:  # ultimate fallback
+        except Exception as err:
             print(f"❌ LLM error: {err}")
             ai_reply = "AI gagal merespons."
 
@@ -127,7 +123,6 @@ def generate_reply(comment: str, post_id: str, comment_id: str, username: str) -
 
     return ai_reply
 
-# Convenience for interactive testing -----------------------------------------
 if __name__ == "__main__":
     demo_reply = generate_reply(
         comment="Keren banget!",
