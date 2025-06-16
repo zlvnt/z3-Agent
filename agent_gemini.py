@@ -263,7 +263,7 @@ def generate_reply(comment, post_id, comment_id, username):
     # JIKA AI GAGAL BALES
     try:
         response = client.models.generate_content(
-            model="models/gemini-1.5-pro",
+            model="models/gemini-2.0-flash",
             contents=[{"role": "user", "parts": [{"text": prompt}]}]
         )
         ai_reply = response.text.strip() if response and response.text and response.text.strip() else "AI gagal merespons."
@@ -281,8 +281,8 @@ def generate_reply(comment, post_id, comment_id, username):
 
 # use
 if __name__ == "__main__":
-    image_url = "https://i.imgur.com/p6AyVpk.png"
-    image_description = "testing part 2"  
+    image_url = "https://i.imgur.com/PXETVN6.jpeg"
+    image_description = "udah lama gak update euyy"  
     content_type = "edukasi"  
 
     # Unggah foto ke Instagram
