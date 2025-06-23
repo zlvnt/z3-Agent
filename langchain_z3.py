@@ -8,6 +8,9 @@ from langchain_community.tools.ddg_search.tool import DuckDuckGoSearchRun
 from langchain.chains import RetrievalQA
 from langchain.agents import initialize_agent, Tool
 from langchain.memory import ConversationBufferMemory
+from typing_extensions import TypedDict
+from langgraph.graph import START, StateGraph
+
 
 from config import GEMINI_API_KEY
 import personality as persona

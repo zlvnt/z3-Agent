@@ -20,7 +20,7 @@ llm = ChatGoogleGenerativeAI(
 print("🧠 Gemini Chat (CTRL+C to exit)")
 while True:
     try:
-        user_input = input("👤 Kamu: ")
+        user_input = input(": ")
         response = llm.invoke(user_input)
         print(f"🤖 Gemini: {response}")
     except KeyboardInterrupt:
