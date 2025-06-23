@@ -1,9 +1,11 @@
 import os
 import json
+import faiss
 
-from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.docstore.in_memory import InMemoryDocstore
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.tools.ddg_search.tool import DuckDuckGoSearchRun
 from langchain.chains import RetrievalQA
 from langchain.agents import initialize_agent, Tool
@@ -32,7 +34,7 @@ llm = ChatGoogleGenerativeAI(
     temperature=0.4,
 )
 
-embedder = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+embedder = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
 vector_store = FAISS.from_texts(["dummy"], embedder)
 retriever = vector_store.as_retriever(
     search_type="similarity_score_threshold",
