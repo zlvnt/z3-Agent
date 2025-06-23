@@ -53,6 +53,30 @@ search_tool = DuckDuckGoSearchRun()
 #  Router Agent (LangGraph)
 # ----------------------------------------------------------------------------
 
+class _RouterState(TypedDict):
+    user_input: str
+    route_to: str  # 'rag' | 'websearch'
+
+def _route(state: _RouterState) -> dict:
+    prompt = f"""
+    Decide the best knowledge source for the message below:
+
+    Message: \"{state['user_input']}\"\n\n    Choose ONE of:\n      internal_doc → if the user asks about the internal PDF/report, data‑mining project, kelompok 4, etc.\n      web_search  → if the user asks general knowledge, news, or anything not contained in the internal document.\n\n    ONLY answer with: internal_doc OR web_search.
+    """
+    decision = llm.invoke(prompt).content.strip().lower()
+    return {"route_to": "rag" if decision == "internal_doc" else "websearch"}
+
+_router_graph = (
+    StateGraph(_RouterState)
+    .add_node("route", _route)
+    .add_edge(START, "route")
+    .compile()
+)
+
+def _decide_route(text: str) -> str:
+    """Return 'rag' or 'websearch' based on router graph"""
+    return _router_graph.invoke({"user_input": text})["route_to"]
+
 # LangChain agent setup
 _tools = [
     Tool(name="web_search", func=search_tool, description="Search the Web (DuckDuckGo)"),
@@ -100,7 +124,6 @@ def generate_reply(comment: str, post_id: str, comment_id: str, username: str) -
     sentiment = analyze_sentiment(comment)
     post_data = persona.get_post_by_id(_PERSONALITY_DATA, post_id) or {}
     post_caption = post_data.get("caption", "Tanpa konteks.")
-    tone = post_data.get("tone", "lifestyle")
 
     # Conversation context ------------------------------------------------------
     context = _build_context(post_id, comment_id)
