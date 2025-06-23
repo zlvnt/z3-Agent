@@ -128,6 +128,16 @@ def generate_reply(comment: str, post_id: str, comment_id: str, username: str) -
     # Conversation context ------------------------------------------------------
     context = _build_context(post_id, comment_id)
 
+    # Decide route and fetch external information ------------------------------
+    route = _decide_route(comment)
+    if route == "rag":
+        external_info = rag_chain.run(comment)
+    else:
+        external_info = search_tool.run(comment)
+
+    if external_info:
+        context = f"{context}\n\nInfo Eksternal:\n{external_info}"
+
     # Prompt construction -------------------------------------------------------
     prompt = _REPLY_PROMPT_TEMPLATE.format(
         post_caption=post_caption,
@@ -141,14 +151,11 @@ def generate_reply(comment: str, post_id: str, comment_id: str, username: str) -
 
     # LLM call ------------------------------------------------------------------
     try:
-        response = agent.invoke({"input": prompt})
-        ai_reply = response.get("output") if isinstance(response, dict) else str(response)
-    except Exception: 
-        try:
-            ai_reply = llm.predict(prompt)
-        except Exception as err:
-            print(f"❌ LLM error: {err}")
-            ai_reply = "AI gagal merespons."
+        response = llm.invoke(prompt)
+        ai_reply = response.content if hasattr(response, "content") else str(response)
+    except Exception as err:
+        print(f"❌ LLM error: {err}")
+        ai_reply = "AI gagal merespons."
 
     # Save conversation ---------------------------------------------------------
     convo.append_comment(post_id, comment_id, username, comment, ai_reply)
