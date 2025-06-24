@@ -1,18 +1,15 @@
 import os
-import json
 import faiss
 
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
-from langchain_community.docstore.in_memory import InMemoryDocstore
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.tools.ddg_search.tool import DuckDuckGoSearchRun
 from langchain.chains import RetrievalQA
-from langchain.agents import initialize_agent, Tool
+from langchain.agents import Tool
 from langchain.memory import ConversationBufferMemory
 from typing_extensions import TypedDict
 from langgraph.graph import START, StateGraph
-
 
 from config import GEMINI_API_KEY
 import personality as persona
@@ -83,12 +80,6 @@ _tools = [
     Tool(name="cache_retriever", func=rag_chain.run, description="Retrieve cached knowledge base"),
 ]
 memory = ConversationBufferMemory(memory_key="chat_history")
-agent = initialize_agent(
-    tools=_tools,
-    llm=llm,
-    agent_type="openai-tools",
-    memory=memory,
-)
 
 # ----------------------------------------------------------------------------
 #  HELPERS
@@ -159,7 +150,6 @@ def generate_reply(comment: str, post_id: str, comment_id: str, username: str) -
 
     # Save conversation ---------------------------------------------------------
     convo.append_comment(post_id, comment_id, username, comment, ai_reply)
-
     return ai_reply
 
 if __name__ == "__main__":
