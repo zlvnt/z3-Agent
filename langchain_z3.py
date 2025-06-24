@@ -7,7 +7,6 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.tools.ddg_search.tool import DuckDuckGoSearchRun
 from langchain.chains import RetrievalQA
 from langchain.agents import Tool
-from langchain.memory import ConversationBufferMemory
 from typing_extensions import TypedDict
 from langgraph.graph import START, StateGraph
 
@@ -79,7 +78,6 @@ _tools = [
     Tool(name="web_search", func=search_tool, description="Search the Web (DuckDuckGo)"),
     Tool(name="cache_retriever", func=rag_chain.run, description="Retrieve cached knowledge base"),
 ]
-memory = ConversationBufferMemory(memory_key="chat_history")
 
 # ----------------------------------------------------------------------------
 #  HELPERS
