@@ -31,10 +31,12 @@ llm = ChatGoogleGenerativeAI(
 )
 
 embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
-vector_store = FAISS.load_local("faiss_store", embeddings, allow_dangerous_deserialization=True)
+vector_store = FAISS.load_local("faiss_store", embeddings, allow_dangerous_deserialization=False)
 retriever = vector_store.as_retriever(
     search_type="similarity_score_threshold",
-    search_kwargs={"score_threshold": 0.85},
+    search_kwargs={
+        "k": 4,
+        "score_threshold": 0.85},
 )
 rag_chain = RetrievalQA.from_chain_type(
     llm=llm,
