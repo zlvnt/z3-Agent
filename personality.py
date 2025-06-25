@@ -6,12 +6,6 @@ def load_personality(path=PERSONALITY_PATH):
         data = json.load(f)
     return data
 
-def get_identity(personality):
-    return personality.get("identity", {})
-
-def get_tone(personality, tone_key):
-    return personality.get("tone", {}).get(tone_key)
-
 def get_rules(personality):
     return personality.get("rules", {})
 
