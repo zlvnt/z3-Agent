@@ -59,10 +59,25 @@ def _route(state: _RouterState) -> dict:
     prompt = f"""
     Decide the best knowledge source for the message below:
 
-    Message: \"{state['user_input']}\"\n\n    Choose ONE of:\n      internal_doc → if the user asks about the internal PDF/report, data‑mining project, kelompok 4, etc.\n      web_search  → if the user asks general knowledge, news, or anything not contained in the internal document.\n\n    ONLY answer with: internal_doc OR web_search.
+    Message: "{state['user_input']}"
+
+    Choose ONE of:
+      direct       → if the comment or question is simple and does not require external information.
+      internal_doc → if the user asks specifically about internal PDF/report, data-mining project, kelompok 4, etc.
+      web_search   → if the user asks general knowledge, news, or anything not contained in the internal document.
+
+    ONLY answer with: direct OR internal_doc OR web_search.
     """
     decision = llm.invoke(prompt).content.strip().lower()
-    return {"route_to": "rag" if decision == "internal_doc" else "websearch"}
+
+    if decision.startswith("internal_doc"):
+        route = "rag"
+    elif decision.startswith("web_search"):
+        route = "websearch"
+    else:
+        route = "direct"
+        
+    return {"route_to": route}
 
 _router_graph = (
     StateGraph(_RouterState)
