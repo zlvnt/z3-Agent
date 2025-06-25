@@ -136,11 +136,13 @@ def generate_reply(comment: str, post_id: str, comment_id: str, username: str) -
 
     # Decide route and fetch external information ------------------------------
     route = _decide_route(comment)
-    
+
     if route == "rag":
         external_info = rag_chain.run(comment)
-    else:  # websearch
+    elif route == "websearch":
         external_info = search_tool.run(comment)
+    else:  # direct
+        external_info = None
 
     if external_info:
         context = f"{context}\n\nInfo Eksternal:\n{external_info}"
