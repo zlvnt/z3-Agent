@@ -57,17 +57,19 @@ class _RouterState(TypedDict):
 
 def _route(state: _RouterState) -> dict:
     prompt = f"""
-    Decide the best knowledge source for the message below:
+    You are a routing agent. Your task is to choose the appropriate information source to answer the user's message below.
 
-    Message: "{state['user_input']}"
+    User's Message:
+    "{state['user_input']}"
 
-    Choose ONE of:
-      direct       → if the comment or question is simple and does not require external information.
-      internal_doc → if the user asks specifically about internal PDF/report, data-mining project, kelompok 4, etc.
-      web_search   → if the user asks general knowledge, news, or anything not contained in the internal document.
+    Choose exactly ONE option from these:
+    - direct       → if the message can be answered directly without external info.
+    - internal_doc → if the message specifically asks about internal documentation or reports.
+    - web_search   → if the message needs general knowledge, news, or external information.
 
     ONLY answer with: direct OR internal_doc OR web_search.
     """
+    
     decision = llm.invoke(prompt).content.strip().lower()
 
     if decision.startswith("internal_doc"):
@@ -146,7 +148,7 @@ def generate_reply(comment: str, post_id: str, comment_id: str, username: str) -
 
     if external_info:
         context = f"{context}\n\nInfo Eksternal:\n{external_info}"
-        
+
     print(f"[router] route chosen: {route}")
 
     # Prompt construction -------------------------------------------------------
