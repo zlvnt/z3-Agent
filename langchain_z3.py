@@ -146,6 +146,8 @@ def generate_reply(comment: str, post_id: str, comment_id: str, username: str) -
 
     if external_info:
         context = f"{context}\n\nInfo Eksternal:\n{external_info}"
+        
+    print(f"[router] route chosen: {route}")
 
     # Prompt construction -------------------------------------------------------
     prompt = _REPLY_PROMPT_TEMPLATE.format(
