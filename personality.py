@@ -6,9 +6,6 @@ def load_personality(path=PERSONALITY_PATH):
         data = json.load(f)
     return data
 
-def get_rules(personality):
-    return personality.get("rules", {})
-
 def get_prompt(personality, prompt_type="caption"):
     return personality.get("prompts", {}).get(prompt_type, "")
 
