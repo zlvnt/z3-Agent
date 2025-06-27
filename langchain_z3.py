@@ -16,7 +16,9 @@ import conversation as convo
 
 try:
     from rf_model import analyze_sentiment
-except ImportError:
+except Exception:
+    # Fall back to a dummy sentiment analyzer if the model cannot be loaded
+    # (e.g. missing pickle files or other import issues)
     def analyze_sentiment(_text: str) -> str:
         return "Netral"
 
