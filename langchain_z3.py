@@ -126,10 +126,10 @@ def generate_reply(comment: str, post_id: str, comment_id: str, username: str) -
     post_data = persona.get_post_by_id(_PERSONALITY_DATA, post_id) or {}
     post_caption = post_data.get("caption", "Tanpa konteks.")
 
-    # Conversation context ------------------------------------------------------
+    # Conversation context
     context = _build_context(post_id, comment_id)
 
-    # Decide route and fetch external information ------------------------------
+    # Decide route
     route = _decide_route(comment)
 
     if route == "rag":

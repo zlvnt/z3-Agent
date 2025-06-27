@@ -12,9 +12,6 @@ def get_rules(personality):
 def get_prompt(personality, prompt_type="caption"):
     return personality.get("prompts", {}).get(prompt_type, "")
 
-def get_posts(personality):
-    return personality.get("posts", [])
-
 def get_post_by_id(personality, post_id):
     for post in personality.get("posts", []):
         if post.get("post_id") == post_id:
