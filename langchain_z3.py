@@ -89,14 +89,7 @@ _router_graph = (
 )
 
 def _decide_route(text: str) -> str:
-    """Return 'rag' or 'websearch' based on router graph"""
     return _router_graph.invoke({"user_input": text})["route_to"]
-
-# LangChain agent setup
-_tools = [
-    Tool(name="web_search", func=search_tool, description="Search the Web (DuckDuckGo)"),
-    Tool(name="cache_retriever", func=rag_chain.run, description="Retrieve cached knowledge base"),
-]
 
 # ----------------------------------------------------------------------------
 #  HELPERS
