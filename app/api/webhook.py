@@ -1,9 +1,9 @@
 from flask import Flask, request, jsonify
 import json
 
-from config import ACCESS_TOKEN, VERIFY_TOKEN
-from langchain_z3 import generate_reply
-from instagram_api import upload_reply
+from Instagram_AI_Agent.app.config import ACCESS_TOKEN, VERIFY_TOKEN
+from Instagram_AI_Agent.app.agent.langchain_z3 import generate_reply
+from Instagram_AI_Agent.app.services.instagram_api import upload_reply
 
 app = Flask(__name__)
 

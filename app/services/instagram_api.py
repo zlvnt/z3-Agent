@@ -1,5 +1,5 @@
 import requests
-from config import ACCESS_TOKEN
+from Instagram_AI_Agent.app.config import ACCESS_TOKEN
 
 def upload_reply(comment_id, message):
     url = f"https://graph.facebook.com/v18.0/{comment_id}/replies"

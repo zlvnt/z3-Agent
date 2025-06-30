@@ -1,5 +1,5 @@
 import json
-from config import PERSONALITY_PATH
+from Instagram_AI_Agent.app.config import PERSONALITY_PATH
 
 def load_personality(path=PERSONALITY_PATH):
     with open(path, "r") as f:

@@ -10,9 +10,9 @@ from langchain.agents import Tool
 from typing_extensions import TypedDict
 from langgraph.graph import START, StateGraph
 
-from config import GEMINI_API_KEY
-import personality as persona
-import conversation as convo
+from Instagram_AI_Agent.app.config import GEMINI_API_KEY
+import Instagram_AI_Agent.app.prompt.personality as persona
+import Instagram_AI_Agent.app.services.conversation as convo
 
 try:
     from rf_model import analyze_sentiment

@@ -1,6 +1,6 @@
 import json
 import os
-from config import CONVERSATIONS_PATH
+from Instagram_AI_Agent.app.config import CONVERSATIONS_PATH
 
 def load_conversations(path=CONVERSATIONS_PATH):
     if not os.path.exists(path):
