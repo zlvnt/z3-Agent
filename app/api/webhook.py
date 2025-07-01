@@ -1,55 +1,79 @@
-from flask import Flask, request, jsonify
-import json
+from fastapi import APIRouter, Request, BackgroundTasks, HTTPException
+from app.config import settings
+from app.agent.langchain_z3 import generate_reply   
+from app.services.instagram_api import upload_reply     
+from app.services.logger import logger                     # util logger
+import hmac, hashlib, json
 
-from Instagram_AI_Agent.app.config import ACCESS_TOKEN, VERIFY_TOKEN
-from Instagram_AI_Agent.app.agent.langchain_z3 import generate_reply
-from Instagram_AI_Agent.app.services.instagram_api import upload_reply
+router = APIRouter()
 
-app = Flask(__name__)
 
-@app.route("/webhook", methods=["GET", "POST"])
-def webhook():
+def _verify_signature(secret: str, body: bytes, header_sig: str) -> None:
+    """X-Hub-Signature-256 cocok (HMAC-SHA256)."""
+    expected = "sha256=" + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
+    if not hmac.compare_digest(expected, header_sig):
+        raise HTTPException(status_code=403, detail="Invalid signature")
 
-    if request.method == "GET":
-        token     = request.args.get("hub.verify_token")
-        challenge = request.args.get("hub.challenge")
-        if token == VERIFY_TOKEN:
-            return challenge, 200
-        return "Unauthorized", 403
 
-    payload = request.json or {}
-    print("\n📩  Incoming Webhook Data:")
-    print(json.dumps(payload, indent=2, ensure_ascii=False))
+@router.get("/")
+async def verify(
+    hub_mode: str | None = None,
+    hub_challenge: str | None = None,
+    hub_verify_token: str | None = None,
+):
+    """Endpoint handshake Meta IG Graph."""
+    if hub_verify_token == settings.VERIFY_TOKEN:
+        return hub_challenge or "ok"
+    raise HTTPException(status_code=403, detail="Unauthorized")
 
-    entries = payload.get("entry", [])
-    for entry in entries:
+
+@router.post("/")
+async def receive(request: Request, bg: BackgroundTasks):
+    """Terima event → verifikasi → delegasikan ke background task."""
+    raw_body = await request.body()
+
+    _verify_signature(
+        settings.APP_SECRET,
+        raw_body,
+        request.headers.get("X-Hub-Signature-256", ""),
+    )
+
+    payload = json.loads(raw_body)
+    bg.add_task(process_payload, payload)        # non-blocking
+    return {"status": "accepted"}                # < 3 detik respon
+
+
+# ---------- helper ----------
+def process_payload(payload: dict) -> None:
+    """Logic pemrosesan — jalan di background thread."""
+    for entry in payload.get("entry", []):
         for change in entry.get("changes", []):
             if change.get("field") != "comments":
                 continue
 
-            comment_data = change["value"]
-            comment_id   = comment_data.get("parent_id") or comment_data.get("id")
-            post_id      = comment_data.get("media", {}).get("id", "unknown_post")
-            comment_text = comment_data.get("text", "")
-            username     = comment_data.get("from", {}).get("username", "")
+            val         = change["value"]
+            comment_txt = val.get("text", "")
+            comment_id  = val.get("id")
+            post_id     = val.get("media", {}).get("id")
+            username    = val.get("from", {}).get("username", "")
 
-            if username.lower() == "z3_agent":
-                print(f"⚠️  Detected self‑comment — skipping (id={comment_id})")
+            if username.lower() == settings.BOT_USERNAME.lower():
+                logger.info("Skip self-comment", comment_id=comment_id)
                 continue
 
-            ai_reply = generate_reply(
-                comment_text,
-                post_id=post_id,
-                comment_id=comment_id,
-                username=username,
-            )
-            print("🤖  AI reply:", ai_reply)
-
-            api_resp = upload_reply(comment_id, ai_reply)
-            print("🚀  IG API response:", api_resp)
-
-    return jsonify(status="ok"), 200
-
-
-if __name__ == "__main__":
-    app.run(port=5001, debug=True)
+            try:
+                reply_txt = generate_reply(
+                    comment_txt,
+                    post_id=post_id,
+                    comment_id=comment_id,
+                    username=username,
+                )
+                upload_reply(comment_id, reply_txt)
+                logger.info(
+                    "Reply sent",
+                    post_id=post_id,
+                    comment_id=comment_id,
+                    user=username,
+                )
+            except Exception as exc:
+                logger.exception("Failed to process comment", error=str(exc))
