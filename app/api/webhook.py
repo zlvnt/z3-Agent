@@ -7,14 +7,18 @@ import hmac, hashlib, json
 
 router = APIRouter()
 
-
+# ──────────────────────────────
+# util
+# ──────────────────────────────
 def _verify_signature(secret: str, body: bytes, header_sig: str) -> None:
     """X-Hub-Signature-256 cocok (HMAC-SHA256)."""
     expected = "sha256=" + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
     if not hmac.compare_digest(expected, header_sig):
         raise HTTPException(status_code=403, detail="Invalid signature")
 
-
+# ──────────────────────────────
+# handshake GET
+# ──────────────────────────────
 @router.get("/")
 async def verify(
     hub_mode: str | None = None,
@@ -38,12 +42,18 @@ async def receive(request: Request, bg: BackgroundTasks):
         request.headers.get("X-Hub-Signature-256", ""),
     )
 
-    payload = json.loads(raw_body)
+    try:
+        payload: dict = json.loads(raw_body)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid JSON")
+
     bg.add_task(process_payload, payload)        # non-blocking
-    return {"status": "accepted"}                # < 3 detik respon
+    return {"status": "accepted"}                # respon < 3 detik
 
 
-# ---------- helper ----------
+# ──────────────────────────────
+# background task
+# ──────────────────────────────
 def process_payload(payload: dict) -> None:
     """Logic pemrosesan — jalan di background thread."""
     for entry in payload.get("entry", []):
