@@ -1,46 +1,31 @@
-"""
-FastAPI entry-point.
-• Meng-include router API
-• Menambah middleware CORS & logger (bila perlu)
-• Menyediakan /healthz
-"""
-
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from app.api import router as api_router
+
+from app.api import api_router
 from app.config import settings
-from app.services.logger import logger
+from app.services.logger import logger  # opsional: kalau mau log saat start
 
 app = FastAPI(
     title="Instagram AI Agent",
-    version="1.0.0",
+    version="0.1.0",
     docs_url="/docs",
-    redoc_url=None,
+    redoc_url="/redoc",
 )
 
-# ────── Middleware CORS (opsional) ──────────────────────
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"] if settings.ENV == "local" else ["https://your-domain.com"],
-    allow_methods=["POST", "GET"],
-    allow_headers=["*"],
-)
-
-# ────── Include seluruh endpoint API ─────────────────────
+# Mount every API router
 app.include_router(api_router)
 
-# ────── Health check endpoint ───────────────────────────
-@app.get("/healthz", tags=["meta"])
-async def healthcheck() -> dict[str, str]:
-    return {"status": "ok"}
+# Simple health-check
+@app.get("/", tags=["health"])
+def health():
+    return {"status": "ok", "env": settings.ENV}
 
 
-# ────── Event Hooks ─────────────────────────────────────
+# ----- optional startup/shutdown hooks -----
 @app.on_event("startup")
-async def on_startup() -> None:
-    logger.info("⚡️ API started", env=settings.ENV)
+def _startup() -> None:
+    logger.info("FastAPI started", env=settings.ENV)
 
 
 @app.on_event("shutdown")
-async def on_shutdown() -> None:
-    logger.info("🛑 API stopped")
+def _shutdown() -> None:
+    logger.info("FastAPI shutdown")
