@@ -1,38 +1,29 @@
+from __future__ import annotations
+
 import json
-import os
-from Instagram_AI_Agent.app.config import CONVERSATIONS_PATH
+from pathlib import Path
+from typing import Any, Dict, List
 
-def load_conversations(path=CONVERSATIONS_PATH):
-    if not os.path.exists(path):
-        return {}
-    with open(path, "r") as f:
-        data = json.load(f)
-    if "conversations" in data:
-        return data["conversations"]
-    else:
-        return data
+from app.config import settings
+from app.services.logger import logger
 
-def save_conversations(conversations, path=CONVERSATIONS_PATH):
-    with open(path, "w") as f:
-        json.dump({"conversations": conversations}, f, indent=2)
+_PATH = Path(settings.CONVERSATIONS_PATH)
 
-def get_conversation(post_id, path=CONVERSATIONS_PATH):
-    conversations = load_conversations(path)
-    return conversations.get(post_id, {})
+def _load() -> List[Dict[str, Any]]:
+    if _PATH.exists():
+        try:
+            return json.loads(_PATH.read_text())
+        except json.JSONDecodeError:
+            logger.warning("Corrupt conversations.json – recreating empty")
+    return []
 
-def append_comment(post_id, comment_id, user, comment, reply, path=CONVERSATIONS_PATH):
-    conversations = load_conversations(path)
-    if post_id not in conversations:
-        conversations[post_id] = {}
-    if comment_id not in conversations[post_id]:
-        conversations[post_id][comment_id] = []
-    conversations[post_id][comment_id].append({
-        "user": user,
-        "comment": comment,
-        "reply": reply
-    })
-    save_conversations(conversations, path)
+def _save(data: List[Dict[str, Any]]) -> None:
+    _PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2))
 
-def get_comment_history(post_id, comment_id, path=CONVERSATIONS_PATH):
-    conversations = load_conversations(path)
-    return conversations.get(post_id, {}).get(comment_id, [])
+def add(entry: Dict[str, Any]) -> None:
+    convos = _load()
+    convos.append(entry)
+    _save(convos)
+
+def history(limit: int = 50) -> List[Dict[str, Any]]:
+    return _load()[-limit:]
