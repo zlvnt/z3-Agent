@@ -1,72 +1,89 @@
-from fastapi import APIRouter, Request, BackgroundTasks, HTTPException
+from fastapi import APIRouter, Request, BackgroundTasks, HTTPException, Header, Query, Response, status
 from app.config import settings
 from app.agent.langchain_z3 import generate_reply   
 from app.services.instagram_api import upload_reply     
 from app.services.logger import logger                     # util logger
 import hmac, hashlib, json
+from typing import Any
 
 router = APIRouter()
 
-# ──────────────────────────────
-# util
-# ──────────────────────────────
+# ───────────────────────────── helper ─────────────────────────────
 def _verify_signature(secret: str, body: bytes, header_sig: str) -> None:
-    """X-Hub-Signature-256 cocok (HMAC-SHA256)."""
+    """Raise 403 jika X-Hub-Signature-256 tidak cocok."""
     expected = "sha256=" + hmac.new(secret.encode(), body, hashlib.sha256).hexdigest()
     if not hmac.compare_digest(expected, header_sig):
-        raise HTTPException(status_code=403, detail="Invalid signature")
-
-# ──────────────────────────────
-# handshake GET
-# ──────────────────────────────
-@router.get("/")
-async def verify(
-    hub_mode: str | None = None,
-    hub_challenge: str | None = None,
-    hub_verify_token: str | None = None,
-):
-    """Endpoint handshake Meta IG Graph."""
-    if hub_verify_token == settings.VERIFY_TOKEN:
-        return hub_challenge or "ok"
-    raise HTTPException(status_code=403, detail="Unauthorized")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid signature")
 
 
-@router.post("/")
-async def receive(request: Request, bg: BackgroundTasks):
-    """Terima event → verifikasi → delegasikan ke background task."""
-    raw_body = await request.body()
+# ─────────────────────────── handshake GET ─────────────────────────
+@router.get(
+    "/",
+    summary="Webhook verification handshake",
+    response_class=Response,
+)
+async def verify_webhook(
+    hub_mode: str = Query(..., alias="hub.mode"),
+    hub_challenge: str = Query(..., alias="hub.challenge"),
+    hub_verify_token: str = Query(..., alias="hub.verify_token"),
+) -> Response:
+    """
+    Meta (Facebook/Instagram) memanggil endpoint ini SATU KALI
+    ketika kamu mendaftarkan webhook.  
+    Wajib mengembalikan **hub.challenge** bila verify_token cocok.
+    """
+    if hub_verify_token != settings.VERIFY_TOKEN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized")
 
-    _verify_signature(
-        settings.APP_SECRET,
-        raw_body,
-        request.headers.get("X-Hub-Signature-256", ""),
-    )
+    # challenge harus dikembalikan mentah (string), tanpa JSON
+    return Response(content=hub_challenge, media_type="text/plain")
+
+
+# ──────────────────────────── receive POST ─────────────────────────
+@router.post(
+    "/",
+    summary="Receive Instagram events",
+    status_code=status.HTTP_202_ACCEPTED,
+)
+async def receive_webhook(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    x_hub_signature_256: str | None = Header(None, alias="X-Hub-Signature-256"),
+) -> dict[str, str]:
+    """
+    Terima notifikasi komentar, validasi tanda tangan,
+    lalu proses di background agar < 3 detik.
+    """
+    if not x_hub_signature_256:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Missing signature header")
+
+    raw_body: bytes = await request.body()
+    _verify_signature(settings.APP_SECRET, raw_body, x_hub_signature_256)
 
     try:
-        payload: dict = json.loads(raw_body)
+        payload: dict[str, Any] = json.loads(raw_body)
     except json.JSONDecodeError:
-        raise HTTPException(status_code=400, detail="Invalid JSON")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid JSON")
 
-    bg.add_task(process_payload, payload)        # non-blocking
-    return {"status": "accepted"}                # respon < 3 detik
+    background_tasks.add_task(_process_payload, payload)
+    return {"status": "accepted"}
 
 
-# ──────────────────────────────
-# background task
-# ──────────────────────────────
-def process_payload(payload: dict) -> None:
-    """Logic pemrosesan — jalan di background thread."""
+# ─────────────────────── background processing ────────────────────
+def _process_payload(payload: dict[str, Any]) -> None:
+    """Jalan di thread lain; aman blocking I/O."""
     for entry in payload.get("entry", []):
         for change in entry.get("changes", []):
             if change.get("field") != "comments":
                 continue
 
-            val         = change["value"]
+            val: dict[str, Any] = change["value"]
             comment_txt = val.get("text", "")
-            comment_id  = val.get("id")
-            post_id     = val.get("media", {}).get("id")
-            username    = val.get("from", {}).get("username", "")
+            comment_id = val.get("id")
+            post_id = val.get("media", {}).get("id")
+            username = val.get("from", {}).get("username", "")
 
+            # Cegah loop balas diri sendiri
             if username.lower() == settings.BOT_USERNAME.lower():
                 logger.info("Skip self-comment", comment_id=comment_id)
                 continue
@@ -85,5 +102,5 @@ def process_payload(payload: dict) -> None:
                     comment_id=comment_id,
                     user=username,
                 )
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001
                 logger.exception("Failed to process comment", error=str(exc))
