@@ -1,23 +1,27 @@
+from __future__ import annotations
+
 import json
-from Instagram_AI_Agent.app.config import PERSONALITY_PATH
+from pathlib import Path
+from typing import Any, Dict, List
 
-def load_personality(path=PERSONALITY_PATH):
-    with open(path, "r") as f:
-        data = json.load(f)
-    return data
+from app.config import settings
 
-def get_prompt(personality, prompt_type="caption"):
-    return personality.get("prompts", {}).get(prompt_type, "")
+_PATH = Path(settings.PERSONALITY_PATH)
 
-def get_post_by_id(personality, post_id):
-    for post in personality.get("posts", []):
+def load() -> Dict[str, Any]:
+    if not _PATH.exists():
+        _PATH.write_text(json.dumps({"prompts": {}, "posts": []}, indent=2))
+    return json.loads(_PATH.read_text())
+
+def prompt(kind: str = "caption") -> str:
+    return load().get("prompts", {}).get(kind, "")
+
+def post_by_id(post_id: str) -> Dict[str, Any] | None:
+    for post in load().get("posts", []):
         if post.get("post_id") == post_id:
             return post
     return None
 
-def get_caption_by_post_id(personality, post_id):
-    post = get_post_by_id(personality, post_id)
-    if post:
-        return post.get("caption", "")
-    return ""
-
+def caption_by_post_id(post_id: str) -> str:
+    post = post_by_id(post_id)
+    return post.get("caption", "") if post else ""
