@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, BackgroundTasks, HTTPException, Header, Query, Response, status
 from app.config import settings
-from app.agent.langchain_z3 import generate_reply   
+from app.agents.reply import generate_reply   
 from app.services.instagram_api import upload_reply     
 from app.services.logger import logger                     # util logger
 import hmac, hashlib, json
