@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, BackgroundTasks, HTTPException, Header, Query, Response, status
 from app.config import settings
-from app.agents.reply import generate_reply   
+from app.agents.router import handle
 from app.services.instagram_api import upload_reply     
 from app.services.logger import logger                     # util logger
 import hmac, hashlib, json
@@ -89,8 +89,9 @@ def _process_payload(payload: dict[str, Any]) -> None:
                 continue
 
             try:
-                reply_txt = generate_reply(
-                    comment_txt,
+                reply_txt = handle(
+                    "reply",
+                    comment=comment_txt,
                     post_id=post_id,
                     comment_id=comment_id,
                     username=username,
