@@ -41,9 +41,6 @@ def generate_reply(
     comment_id: str,
     username: str,
 ) -> str:
-    """
-    Generate AI reply for a single Instagram comment.
-    """
     context = retrieve_context(comment)
 
     prompt = _REPLY_TEMPLATE.format_messages(
