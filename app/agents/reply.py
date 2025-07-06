@@ -1,12 +1,3 @@
-"""
-Comment–reply generator (Gemini).
-
-• Ambil context RAG jika ada
-• Siapkan prompt/template
-• Panggil LLM Gemini
-• Simpan percakapan
-"""
-
 from __future__ import annotations
 from pathlib import Path
 from typing import Any, Optional
@@ -19,9 +10,9 @@ from app.config import settings
 from app.services.logger import logger
 from app.services.conversation import add as save_conv
 
-# Load reply prompt template
+# Load
 _REPLY_TEMPLATE = ChatPromptTemplate.from_template(
-    Path("prompts/reply_template.txt").read_text(encoding="utf-8")
+    Path("content/reply-prompt.txt").read_text(encoding="utf-8")
 )
 
 # Inisialisasi model Gemini
