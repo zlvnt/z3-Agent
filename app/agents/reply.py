@@ -1,58 +1,59 @@
 """
-Comment–reply (dan caption) generator.
+Comment–reply generator (Gemini).
 
-• Ambil konteks dokumen via RAG
-• Susun prompt dari template
-• Panggil LLM (OpenRouter atau Gemini)
-• Simpan percakapan ke store
+• Ambil context RAG jika ada
+• Siapkan prompt/template
+• Panggil LLM Gemini
+• Simpan percakapan
 """
 
 from __future__ import annotations
-
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
-from langchain.chat_models import ChatOpenAI
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.messages import HumanMessage, SystemMessage
 
 from app.config import settings
 from app.services.logger import logger
 from app.services.conversation import add as save_conv
-from app.agents.rag import retrieve_context
 
-
-# ------------------ load prompt template ------------------
+# Load reply prompt template
 _REPLY_TEMPLATE = ChatPromptTemplate.from_template(
     Path("prompts/reply_template.txt").read_text(encoding="utf-8")
 )
 
-# ------------------ init LLM ------------------------------
-_llm = ChatOpenAI(
-    api_key=settings.OPENROUTER_API_KEY,
-    model_name=settings.MODEL_NAME,
+# Inisialisasi model Gemini
+_llm = ChatGoogleGenerativeAI(
+    model=settings.MODEL_NAME,  # harus cocok dengan .env
     temperature=0.7,
+    google_api_key=settings.GEMINI_API_KEY,  # opsional jika tidak via ENV
 )
 
-
-# ------------------ public API ----------------------------
 def generate_reply(
     comment: str,
     post_id: str,
     comment_id: str,
     username: str,
+    context: Optional[str] = ""
 ) -> str:
-    context = retrieve_context(comment)
-
-    prompt = _REPLY_TEMPLATE.format_messages(
+    """
+    Generate AI reply. Jika ada context, disuntik ke prompt.
+    """
+    # Format pesan untuk LLM
+    messages = _REPLY_TEMPLATE.format_messages(
         user=comment,
-        context=context,
         username=username,
+        context=context or ""
     )
 
-    reply: str = _llm.predict_messages(prompt).content.strip()
-    logger.info("LLM reply generated", comment_id=comment_id)
+    # Kirim ke Gemini
+    ai_msg = _llm.invoke(messages)
+    reply = ai_msg.content.strip()
+    logger.info("Generated reply from LLM", comment_id=comment_id)
 
-    # save conversation (async write not diperlukan; file kecil)
+    # Simpan percakapan
     save_conv(
         {
             "post_id": post_id,
