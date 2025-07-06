@@ -17,9 +17,9 @@ from app.agents.reply import generate_reply
 from app.agents.rag import retrieve_context
 from app.services.search import search_web
 
-# --- Load supervisor prompt ---
+#LOAD
 _SUPPROMPT = ChatPromptTemplate.from_template(
-    Path("prompts/supervisor_template.txt").read_text(encoding="utf-8")
+    Path("content/supervisor-prompt.txt").read_text(encoding="utf-8")
 )
 
 # --- Inisialisasi Gemini LLM ---
