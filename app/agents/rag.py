@@ -1,64 +1,66 @@
-"""
-Retrieval-Augmented Generation (RAG) helpers.
-
-Tugas modul ini:
-1. Membangun / memuat vector-store (FAISS / Pinecone / Chroma) via services.vector.
-2. Menyediakan fungsi `retrieve_context()` yang merangkum dokumen relevan
-   ke bentuk string siap disuntikkan ke prompt LLM.
-"""
-
 from __future__ import annotations
+from typing import Literal
 
-from typing import List
-
-from app.config import settings
-from app.services.vector import get_retriever           # singleton factory
+from app.services.vector import get_retriever
+from app.services.search import search_web
 from app.services.logger import logger
 
-# --------------------------------------------------------------------------- #
-# Public helpers                                                              #
-# --------------------------------------------------------------------------- #
-def retrieve_context(query: str, k: int = 4) -> str:
-    """
-    Ambil `k` dokumen terdekat terhadap `query` dan gabungkan isinya.
-    Result dipakai oleh agent reply/caption sebagai konteks.
+def retrieve_context(
+    query: str,
+    mode: Literal["docs", "web", "all"] = "docs",
+    k_docs: int = 4,
+    k_web: int = 3,
+    max_len: int = 2000
+) -> str:
+    contexts = []
 
-    Returns
-    -------
-    str : gabungan dokumen, dipisah garis kosong.
-    """
-    retriever = get_retriever()
-    docs = retriever.get_relevant_documents(query, k=k)      # type: ignore[attr-defined]
-    joined = "\n\n".join(_safe_content(doc.page_content) for doc in docs)
-    logger.debug("RAG retrieved docs", total=len(docs))
-    return joined
+    if mode in {"docs", "all"}:
+        retriever = get_retriever()
+        docs = retriever.get_relevant_documents(query, k=k_docs)
+        if docs:
+            context_docs = "\n".join(
+                f"[Docs] { _safe_content(d.page_content.strip(), max_len) }"
+                for d in docs if d.page_content.strip()
+            )
+            contexts.append(context_docs)
+        logger.debug("RAG.docs", found=len(docs))
 
+    if mode in {"web", "all"}:
+        snippets = search_web(query, k=k_web)
+        if snippets:
+            context_web = "\n".join(
+                f"[Web] { _safe_content(s.strip(), max_len) }"
+                for s in snippets if s.strip()
+            )
+            contexts.append(context_web)
+        logger.debug("RAG.web", found=len(snippets))
 
-# --------------------------------------------------------------------------- #
-# Optional: On-demand build / refresh index                                   #
-# --------------------------------------------------------------------------- #
+    if not contexts:
+        logger.warning("No RAG context found", query=query, mode=mode)
+        return ""
+    return "\n\n".join(contexts)
+
+# ─────────────────────────────────────────────────────── #
+#  Utility/Dev: On-demand build index & safe content      #
+# ─────────────────────────────────────────────────────── #
+
 def rebuild_index() -> None:
     """
     Bangun ulang vector-store dari folder `settings.DOCS_DIR`.
-    Dipanggil manual (CLI) tiap kali dokumen mentah diganti.
+    Dipanggil manual (CLI) tiap kali dokumen diganti.
     """
-    from app.services.vector import build_index  # lazy import agar tidak melingkar
+    from app.services.vector import build_index  # lazy import agar tidak circular
     build_index()
 
-
-# --------------------------------------------------------------------------- #
-# Internal util                                                               #
-# --------------------------------------------------------------------------- #
 def _safe_content(text: str, max_len: int = 2_000) -> str:
     """
     Hindari prompt terlalu panjang: potong doc ke max_len karakter.
     """
     return text if len(text) <= max_len else text[: max_len - 1] + "…"
 
-
-# --------------------------------------------------------------------------- #
-# CLI helper: `python -m app.agents.rag build`                                #
-# --------------------------------------------------------------------------- #
+# ─────────────────────────────────────────────────────── #
+#  CLI helper: python -m app.agents.rag build             #
+# ─────────────────────────────────────────────────────── #
 if __name__ == "__main__":
     import sys
 

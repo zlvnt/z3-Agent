@@ -1,6 +1,5 @@
 """
-LLM-based Supervisor Agent (Gemini).
-
+LLM-based Supervisor Agent
 Menentukan route: direct, rag, websearch.
 """
 
@@ -22,10 +21,10 @@ _SUPPROMPT = ChatPromptTemplate.from_template(
     Path("content/supervisor-prompt.txt").read_text(encoding="utf-8")
 )
 
-# --- Inisialisasi Gemini LLM ---
+# Inisialisasi Gemini LLM
 _llm = ChatGoogleGenerativeAI(
-    model=settings.MODEL_NAME,      # e.g. "gemini-pro"
-    temperature=0,                  # deterministik
+    model=settings.MODEL_NAME,   
+    temperature=0,             
 )
 
 def supervisor_route(user_input: str) -> str:
