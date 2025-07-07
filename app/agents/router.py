@@ -1,8 +1,3 @@
-"""
-LLM-based Supervisor Agent
-Menentukan route: direct, rag, websearch.
-"""
-
 from __future__ import annotations
 from pathlib import Path
 from typing import Any
@@ -14,27 +9,28 @@ from app.config import settings
 from app.services.logger import logger
 from app.agents.reply import generate_reply
 from app.agents.rag import retrieve_context
-from app.services.search import search_web
 
-#LOAD
-_SUPPROMPT = ChatPromptTemplate.from_template(
+# Pr
+_SUPERVISOR_PROMPT = ChatPromptTemplate.from_template(
     Path("content/supervisor-prompt.txt").read_text(encoding="utf-8")
 )
 
-# Inisialisasi Gemini LLM
 _llm = ChatGoogleGenerativeAI(
-    model=settings.MODEL_NAME,   
-    temperature=0,             
+    model=settings.MODEL_NAME,
+    temperature=0,
+    google_api_key=settings.GEMINI_API_KEY,
 )
 
 def supervisor_route(user_input: str) -> str:
-    msg = _SUPPROMPT.format_messages(user_input=user_input)
+    msg = _SUPERVISOR_PROMPT.format_messages(user_input=user_input)
     decision = _llm.invoke(msg).content.strip().lower()
-    logger.info("Supervisor route selected", route=decision)
+    logger.info("Supervisor decided route", route=decision)
     if decision.startswith(("internal_doc", "rag")):
-        return "rag"
+        return "docs"
     if decision.startswith(("web_search", "websearch")):
-        return "websearch"
+        return "web"
+    if decision.startswith("all"):
+        return "all"
     return "direct"
 
 def handle(
@@ -44,19 +40,27 @@ def handle(
     username: str,
     **kwargs: Any,
 ) -> str:
-    route = supervisor_route(comment)
-    logger.debug("Route decision", route=route)
+    """
+    Orkestrasi utama:
+    1. Supervisor memilih source context (direct/docs/web/all)
+    2. RAG mengumpulkan context (jika perlu)
+    3. Reply agent menyusun jawaban akhir dengan LLM
+    """
+    mode = supervisor_route(comment)
+    logger.debug("Route decision", mode=mode)
 
-    if route == "direct":
-        reply = generate_reply(comment, post_id, comment_id, username)
-    elif route == "rag":
-        context = retrieve_context(comment)
-        reply = generate_reply(comment, post_id, comment_id, username, context=context)
-    elif route == "websearch":
-        urls = search_web(comment)
-        reply = f"Saya menemukan: {urls[0] if urls else 'tidak ada hasil'}"
-    else:
-        reply = "Maaf, sistem tidak bisa memproses komentar ini."
+    context = ""
+    if mode in {"docs", "web", "all"}:
+        context = retrieve_context(comment, mode=mode)
+    # mode=="direct" → context tetap kosong
 
-    logger.info("Reply sent", route=route)
+    reply = generate_reply(
+        comment=comment,
+        post_id=post_id,
+        comment_id=comment_id,
+        username=username,
+        context=context,
+    )
+
+    logger.info("Reply sent", mode=mode)
     return reply
