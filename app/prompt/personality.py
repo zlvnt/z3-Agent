@@ -2,26 +2,38 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from app.config import settings
+from app.services.logger import logger
 
-_PATH = Path(settings.PERSONALITY_PATH)
+PERSONA_PATH = getattr(settings, "PERSONALITY_PATH", "content/personality1.json")
 
 def load() -> Dict[str, Any]:
-    if not _PATH.exists():
-        _PATH.write_text(json.dumps({"prompts": {}, "posts": []}, indent=2))
-    return json.loads(_PATH.read_text())
 
-def prompt(kind: str = "caption") -> str:
-    return load().get("prompts", {}).get(kind, "")
+    try:
+        with open(PERSONA_PATH, encoding="utf-8") as f:
+            data = json.load(f)
+        return data
+    except Exception as e:
+        logger.warning("Failed to load personality JSON, using fallback", error=str(e))
+        return {
+            "identity": {"name": "Z3 Assistant", "role": "AI Customer Service"},
+            "rules": {"reply_do": [], "reply_dont": []},
+            "prompts": {"reply": "Kamu adalah AI Customer Service. Jawab singkat & ramah."}
+        }
 
-def post_by_id(post_id: str) -> Dict[str, Any] | None:
-    for post in load().get("posts", []):
-        if post.get("post_id") == post_id:
-            return post
-    return None
+def persona_intro() -> str:
+    p = load()
+    identity = p.get("identity", {})
+    template = p.get("prompts", {}).get("reply", "")
+    return template.format(
+        identity_name=identity.get("name", "Z3 Assistant"),
+        identity_role=identity.get("role", "AI Customer Service")
+    )
 
-def caption_by_post_id(post_id: str) -> str:
-    post = post_by_id(post_id)
-    return post.get("caption", "") if post else ""
+def rules_txt() -> str:
+    p = load()
+    do_ = "\n".join(p.get("rules", {}).get("reply_do", []))
+    dont_ = "\n".join(f"JANGAN: {d}" for d in p.get("rules", {}).get("reply_dont", []))
+    return f"{do_}\n{dont_}".strip()
