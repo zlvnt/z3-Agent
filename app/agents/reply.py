@@ -8,15 +8,16 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from app.config import settings
 from app.services.logger import logger
 from app.services.conversation import add as save_conv
+from app.prompt.personality import persona_intro, rules_txt
 
 # Load
 _REPLY_TEMPLATE = ChatPromptTemplate.from_template(
     Path("content/reply-prompt.txt").read_text(encoding="utf-8")
 )
 
-# Inisialisasi model Gemini
 _llm = ChatGoogleGenerativeAI(
     model=settings.MODEL_NAME,
+    temperature=0.7,
     google_api_key=settings.GEMINI_API_KEY,
 )
 
@@ -27,17 +28,19 @@ def generate_reply(
     username: str,
     context: Optional[str] = ""
 ) -> str:
-    # Format pesan untuk LLM
-    messages = _REPLY_TEMPLATE.format_messages(
-        user=comment,
-        username=username,
-        context=context or ""
-    )
-
-    #to llm
-    ai_msg = _llm.invoke(messages)
-    reply = ai_msg.content.strip()
-    logger.info("Generated reply from LLM", comment_id=comment_id)
+    try:
+        messages = _REPLY_TEMPLATE.format_messages(
+            persona_intro=persona_intro(),
+            rules=rules_txt(),
+            comment=comment,
+            context=context or "",
+        )
+        ai_msg = _llm.invoke(messages)
+        reply = ai_msg.content.strip()
+        logger.info("Generated reply from LLM", comment_id=comment_id)
+    except Exception as e:
+        logger.error("LLM reply failed", error=str(e))
+        reply = "Maaf, sistem gagal membuat balasan otomatis."
 
     # Simpan
     save_conv(
