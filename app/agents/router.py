@@ -40,12 +40,6 @@ def handle(
     username: str,
     **kwargs: Any,
 ) -> str:
-    """
-    Orkestrasi utama:
-    1. Supervisor memilih source context (direct/docs/web/all)
-    2. RAG mengumpulkan context (jika perlu)
-    3. Reply agent menyusun jawaban akhir dengan LLM
-    """
     mode = supervisor_route(comment)
     logger.debug("Route decision", mode=mode)
 
