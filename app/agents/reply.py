@@ -4,7 +4,6 @@ from typing import Any, Optional
 
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
-from langchain_core.messages import HumanMessage, SystemMessage
 
 from app.config import settings
 from app.services.logger import logger
@@ -29,9 +28,6 @@ def generate_reply(
     username: str,
     context: Optional[str] = ""
 ) -> str:
-    """
-    Generate AI reply. Jika ada context, disuntik ke prompt.
-    """
     # Format pesan untuk LLM
     messages = _REPLY_TEMPLATE.format_messages(
         user=comment,
@@ -39,12 +35,12 @@ def generate_reply(
         context=context or ""
     )
 
-    # Kirim ke Gemini
+    #to llm
     ai_msg = _llm.invoke(messages)
     reply = ai_msg.content.strip()
     logger.info("Generated reply from LLM", comment_id=comment_id)
 
-    # Simpan percakapan
+    # Simpan
     save_conv(
         {
             "post_id": post_id,
