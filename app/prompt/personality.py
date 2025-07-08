@@ -17,19 +17,15 @@ def load() -> Dict[str, Any]:
         return data
     except Exception as e:
         logger.warning("Failed to load personality JSON, using fallback", error=str(e))
-        return {
-            "identity": {"name": "Z3 Assistant", "role": "AI Customer Service"},
-            "rules": {"reply_do": [], "reply_dont": []},
-            "prompts": {"reply": "Kamu adalah AI Customer Service. Jawab singkat & ramah."}
-        }
+        return {}
 
 def persona_intro() -> str:
     p = load()
     identity = p.get("identity", {})
     template = p.get("prompts", {}).get("reply", "")
     return template.format(
-        identity_name=identity.get("name", "Z3 Assistant"),
-        identity_role=identity.get("role", "AI Customer Service")
+        identity_name=identity.get("name", ""),
+        identity_role=identity.get("role", "")
     )
 
 def rules_txt() -> str:
