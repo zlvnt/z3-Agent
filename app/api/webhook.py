@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, BackgroundTasks, HTTPException, Header, 
 from app.config import settings
 from app.agents.router import handle
 from app.services.instagram_api import upload_reply     
-from app.services.logger import logger                     # util logger
+from app.services.logger import logger                
 import hmac, hashlib, json
 from typing import Any
 
@@ -28,8 +28,7 @@ async def verify_webhook(
     hub_verify_token: str = Query(..., alias="hub.verify_token"),
 ) -> Response:
     """
-    Meta (Facebook/Instagram) memanggil endpoint ini SATU KALI
-    ketika kamu mendaftarkan webhook.  
+    Meta (Facebook/Instagram) memanggil endpoint ini sekali ketika mendaftarkan webhook.  
     Wajib mengembalikan **hub.challenge** bila verify_token cocok.
     """
     if hub_verify_token != settings.VERIFY_TOKEN:
@@ -50,10 +49,7 @@ async def receive_webhook(
     background_tasks: BackgroundTasks,
     x_hub_signature_256: str | None = Header(None, alias="X-Hub-Signature-256"),
 ) -> dict[str, str]:
-    """
-    Terima notifikasi komentar, validasi tanda tangan,
-    lalu proses di background agar < 3 detik.
-    """
+    
     if not x_hub_signature_256:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Missing signature header")
 
@@ -71,7 +67,6 @@ async def receive_webhook(
 
 # ─────────────────────── background processing ────────────────────
 def _process_payload(payload: dict[str, Any]) -> None:
-    """Jalan di thread lain; aman blocking I/O."""
     for entry in payload.get("entry", []):
         for change in entry.get("changes", []):
             if change.get("field") != "comments":
