@@ -16,9 +16,8 @@ _REPLY_TEMPLATE = ChatPromptTemplate.from_template(
 
 # Inisialisasi model Gemini
 _llm = ChatGoogleGenerativeAI(
-    model=settings.MODEL_NAME,  # harus cocok dengan .env
-    temperature=0.7,
-    google_api_key=settings.GEMINI_API_KEY,  # opsional jika tidak via ENV
+    model=settings.MODEL_NAME,
+    google_api_key=settings.GEMINI_API_KEY,
 )
 
 def generate_reply(
