@@ -7,7 +7,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.config import settings
 from app.services.logger import logger
-from app.services.conversation import add as save_conv
+from app.services.conversation import add as save_conv, get_comment_history
 from app.prompt.personality import persona_intro, rules_txt
 
 # Load
@@ -20,6 +20,22 @@ _llm = ChatGoogleGenerativeAI(
     temperature=0.7,
     google_api_key=settings.GEMINI_API_KEY,
 )
+
+
+def _build_history_context(
+    post_id: str,
+    comment_id: str,
+    limit: int = 5
+) -> str:
+    history = get_comment_history(post_id, comment_id)
+    if not history:
+        return ""
+    slices = history[-limit:]
+    ctx_lines = ["Riwayat Percakapan Sebelumnya:"]
+    for h in slices:
+        ctx_lines.append(f"{h['user']}: {h['comment']}")
+        ctx_lines.append(f"z3: {h['reply']}")
+    return "\n".join(ctx_lines)
 
 def generate_reply(
     comment: str,
