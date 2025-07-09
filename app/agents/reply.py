@@ -45,11 +45,14 @@ def generate_reply(
     context: Optional[str] = ""
 ) -> str:
     try:
+        history_context = _build_history_context(post_id, comment_id, limit=5)
+        context_final = "\n".join([history_context, context or ""]).strip()
+
         messages = _REPLY_TEMPLATE.format_messages(
             persona_intro=persona_intro(),
             rules=rules_txt(),
             comment=comment,
-            context=context or "",
+            context=context_final,
         )
         ai_msg = _llm.invoke(messages)
         reply = ai_msg.content.strip()
@@ -60,9 +63,7 @@ def generate_reply(
 
     # Simpan
     save_conv(
-        {
-            "post_id": post_id,
-            "comment_id": comment_id,
+        post_id, comment_id, {
             "user": username,
             "comment": comment,
             "reply": reply,
