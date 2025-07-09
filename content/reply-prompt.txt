@@ -7,6 +7,4 @@ User: "{user}"
 Informasi tambahan (bisa internal docs atau web):
 {context}
 
-Tolong balas dengan gaya ramah, ringkas, jelas, dan gunakan emoji jika relevan. Jawab dalam bahasa Indonesia.
-
 Jawaban Admin AI:
