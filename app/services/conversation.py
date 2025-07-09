@@ -25,5 +25,5 @@ def add(entry: Dict[str, Any]) -> None:
     convos.append(entry)
     _save(convos)
 
-def history(limit: int = 50) -> List[Dict[str, Any]]:
+def history(limit: int = 5) -> List[Dict[str, Any]]:
     return _load()[-limit:]
