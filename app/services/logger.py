@@ -42,7 +42,7 @@ def _setup_logging() -> None:
         context_class=dict,
         logger_factory=structlog.stdlib.LoggerFactory(),
         wrapper_class=structlog.make_filtering_bound_logger(
-            getattr(logging, log_level, logging.INFO)   # ⬅️ pakai env
+            getattr(logging, log_level, logging.INFO)
         ),
         cache_logger_on_first_use=True,
     )
@@ -50,5 +50,5 @@ def _setup_logging() -> None:
 
 _setup_logging()
 
-# Public, ready-to-use logger
+# p
 logger = structlog.get_logger()
