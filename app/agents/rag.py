@@ -40,27 +40,13 @@ def retrieve_context(
         return ""
     return "\n\n".join(contexts)
 
-# ─────────────────────────────────────────────────────── #
-#  Utility/Dev: On-demand build index & safe content      #
-# ─────────────────────────────────────────────────────── #
-
 def rebuild_index() -> None:
-    """
-    Bangun ulang vector-store dari folder `settings.DOCS_DIR`.
-    Dipanggil manual (CLI) tiap kali dokumen diganti.
-    """
-    from app.services.vector import build_index  # lazy import agar tidak circular
+    from app.services.vector import build_index
     build_index()
 
 def _safe_content(text: str, max_len: int = 2_000) -> str:
-    """
-    Hindari prompt terlalu panjang: potong doc ke max_len karakter.
-    """
     return text if len(text) <= max_len else text[: max_len - 1] + "…"
 
-# ─────────────────────────────────────────────────────── #
-#  CLI helper: python -m app.agents.rag build             #
-# ─────────────────────────────────────────────────────── #
 if __name__ == "__main__":
     import sys
 
