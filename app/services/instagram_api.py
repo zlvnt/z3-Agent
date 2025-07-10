@@ -1,10 +1,12 @@
 from __future__ import annotations
-
 import requests
+
 from app.config import settings
 from app.services.logger import logger
 
 BASE_URL = "https://graph.facebook.com/v19.0"
+GRAPH_API_VERSION = getattr(settings, "GRAPH_API_VERSION", "18.0")
+ACCESS_TOKEN = getattr(settings, "INSTAGRAM_ACCESS_TOKEN", "")
 
 def _url(path: str) -> str:
     return f"{BASE_URL}/{path}"
@@ -16,19 +18,20 @@ def _params(extra: dict | None = None) -> dict:
     return p
 
 # ─────────────────────────── Public helpers ────────────────────────────
-def upload_reply(comment_id: str, text: str) -> None:
-    """POST <comment_id>/replies"""
-    url = _url(f"{comment_id}/replies")
-    resp = requests.post(url, params=_params(), data={"message": text}, timeout=10)
-    if resp.status_code >= 300:
-        logger.error("Failed to upload reply", status=resp.status_code, body=resp.text)
-        resp.raise_for_status()
-    logger.debug("Reply OK", cid=comment_id)
-
-def get_username(account_id: str | None = None) -> str:
-    """Fetch username of the bot account (fallback)."""
-    account_id = account_id or settings.INSTAGRAM_ACCOUNT_ID
-    url = _url(account_id)
-    fields = {"fields": "username"}
-    resp = requests.get(url, params=_params(fields), timeout=10).json()
-    return resp.get("username", "")
+def upload_reply(comment_id: str, message: str) -> dict:
+    url = f"https://graph.facebook.com/v{GRAPH_API_VERSION}/{comment_id}/replies"
+    payload = {
+        "message": message,
+        "access_token": ACCESS_TOKEN,
+    }
+    try:
+        resp = requests.post(url, data=payload, timeout=10)
+        result = resp.json()
+        if resp.status_code != 200 or "error" in result:
+            logger.error("Failed to reply Instagram comment", result=result)
+        else:
+            logger.info("Reply sent to Instagram comment", comment_id=comment_id)
+        return result
+    except Exception as e:
+        logger.exception("Upload reply to Instagram failed")
+        return {"error": str(e)}
