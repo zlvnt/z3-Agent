@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     CONVERSATIONS_PATH: str = Field("data/conversations.json", env="CONVERSATIONS_PATH")
     PERSONALITY_PATH: str = Field("content/personality1.json", env="PERSONALITY_PATH")
 
+    # Pr path
+    REPLY_PROMPT_PATH: str = Field("content/reply-prompt.txt", env="REPLY_PROMPT_PATH")
+    SUPERVISOR_PROMPT_PATH: str = Field("content/supervisor-prompt.txt", env="SUPERVISOR_PROMPT_PATH")
+
     # Graph API Version
     GRAPH_API_VERSION: str = Field("18.0", env="GRAPH_API_VERSION")
 
