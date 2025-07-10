@@ -29,6 +29,7 @@ class Settings(BaseSettings):
 
     # Graph API Version
     GRAPH_API_VERSION: str = Field("18.0", env="GRAPH_API_VERSION")
+    INSTAGRAM_API_BASE_URL: str = Field("https://graph.facebook.com", env="INSTAGRAM_API_BASE_URL")
 
     class Config:
         env_file = ".env"

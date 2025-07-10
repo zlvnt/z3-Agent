@@ -4,22 +4,12 @@ import requests
 from app.config import settings
 from app.services.logger import logger
 
-BASE_URL = "https://graph.facebook.com/v19.0"
-GRAPH_API_VERSION = getattr(settings, "GRAPH_API_VERSION", "18.0")
-ACCESS_TOKEN = getattr(settings, "INSTAGRAM_ACCESS_TOKEN", "")
+INSTAGRAM_API_BASE_URL = settings.INSTAGRAM_API_BASE_URL
+GRAPH_API_VERSION = settings.GRAPH_API_VERSION
+ACCESS_TOKEN = settings.INSTAGRAM_ACCESS_TOKEN
 
-def _url(path: str) -> str:
-    return f"{BASE_URL}/{path}"
-
-def _params(extra: dict | None = None) -> dict:
-    p = {"access_token": settings.INSTAGRAM_ACCESS_TOKEN}
-    if extra:
-        p.update(extra)
-    return p
-
-# ─────────────────────────── Public helpers ────────────────────────────
 def upload_reply(comment_id: str, message: str) -> dict:
-    url = f"https://graph.facebook.com/v{GRAPH_API_VERSION}/{comment_id}/replies"
+    url = f"{INSTAGRAM_API_BASE_URL}/v{GRAPH_API_VERSION}/{comment_id}/replies"
     payload = {
         "message": message,
         "access_token": ACCESS_TOKEN,
