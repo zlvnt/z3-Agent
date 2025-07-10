@@ -12,7 +12,7 @@ from app.prompt.personality import persona_intro, rules_txt
 
 # Load
 _REPLY_TEMPLATE = ChatPromptTemplate.from_template(
-    Path("content/reply-prompt.txt").read_text(encoding="utf-8")
+    Path(settings.REPLY_PROMPT_PATH).read_text(encoding="utf-8")
 )
 
 _llm = ChatGoogleGenerativeAI(

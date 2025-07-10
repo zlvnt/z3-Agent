@@ -12,7 +12,7 @@ from app.agents.rag import retrieve_context
 
 # Pr
 _SUPERVISOR_PROMPT = ChatPromptTemplate.from_template(
-    Path("content/supervisor-prompt.txt").read_text(encoding="utf-8")
+    Path(settings.SUPERVISOR_PROMPT_PATH).read_text(encoding="utf-8")
 )
 
 _llm = ChatGoogleGenerativeAI(
@@ -46,7 +46,7 @@ def handle(
     context = ""
     if mode in {"docs", "web", "all"}:
         context = retrieve_context(comment, mode=mode)
-    # mode=="direct" → context tetap kosong
+    # mode=="direct" → context kosong
 
     reply = generate_reply(
         comment=comment,
