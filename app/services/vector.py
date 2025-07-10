@@ -11,7 +11,6 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from app.config import settings
 from app.services.logger import logger
 
-# Env/config dari settings
 _DOCS_DIR = Path(getattr(settings, "DOCS_DIR", "docs"))
 _VEC_DIR = Path(getattr(settings, "VECTOR_DIR", "data/vector_store"))
 _MODEL = getattr(settings, "MODEL_NAME", "gemini-2.0-flash")
