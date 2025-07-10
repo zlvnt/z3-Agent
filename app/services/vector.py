@@ -19,10 +19,6 @@ _MODEL = getattr(settings, "MODEL_NAME", "gemini-2.0-flash")
 _RETRIEVER: FAISS | None = None    # cache singleton
 
 def get_retriever() -> FAISS:
-    """
-    Load FAISS retriever dari disk, build jika belum ada.
-    Singleton pattern, supaya tidak load dua kali.
-    """
     global _RETRIEVER
     if _RETRIEVER is not None:
         return _RETRIEVER.as_retriever(search_kwargs={"k": 4})
@@ -43,9 +39,6 @@ def get_retriever() -> FAISS:
     return _RETRIEVER.as_retriever(search_kwargs={"k": 4})
 
 def build_index() -> None:
-    """
-    Bangun index FAISS dari dokumen mentah di DOCS_DIR.
-    """
     logger.info("Building vector index from docs", docs_dir=_DOCS_DIR)
     docs = _load_raw_docs()
     split_docs = _split_docs(docs)
