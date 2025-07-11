@@ -15,7 +15,6 @@ def _verify_signature(secret: str, body: bytes, header_sig: str) -> None:
     if not hmac.compare_digest(expected, header_sig):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid signature")
 
-
 # ─────────────────────────── handshake GET ─────────────────────────
 @router.get(
     "/",
@@ -27,14 +26,10 @@ async def verify_webhook(
     hub_challenge: str = Query(..., alias="hub.challenge"),
     hub_verify_token: str = Query(..., alias="hub.verify_token"),
 ) -> Response:
-    """
-    Meta (Facebook/Instagram) memanggil endpoint ini sekali ketika mendaftarkan webhook.  
-    Wajib mengembalikan **hub.challenge** bila verify_token cocok.
-    """
     if hub_verify_token != settings.VERIFY_TOKEN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized")
 
-    # challenge harus dikembalikan mentah (string), tanpa JSON
+    # challenge dikembalikan mentah (string), tanpa JSON
     return Response(content=hub_challenge, media_type="text/plain")
 
 
@@ -78,14 +73,13 @@ def _process_payload(payload: dict[str, Any]) -> None:
             post_id = val.get("media", {}).get("id")
             username = val.get("from", {}).get("username", "")
 
-            # Cegah loop balas diri sendiri
+            # Cegah loop
             if username.lower() == settings.BOT_USERNAME.lower():
                 logger.info("Skip self-comment", comment_id=comment_id)
                 continue
 
             try:
                 reply_txt = handle(
-                    "reply",
                     comment=comment_txt,
                     post_id=post_id,
                     comment_id=comment_id,
