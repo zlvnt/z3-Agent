@@ -36,6 +36,9 @@ class Settings(BaseSettings):
     VECTOR_DIR: str = Field("data/vector_store", env="VECTOR_DIR")
     MODEL_NAME: str = Field("gemini-2.0-flash", env="MODEL_NAME")
 
+    #Persona
+    PERSONALITY_PATH: str = Field("content/personality1.json", env="PERSONALITY_PATH")
+
     class Config:
         env_file = ".env"
         case_sensitive = False

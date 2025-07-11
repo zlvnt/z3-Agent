@@ -7,7 +7,7 @@ from typing import Any, Dict
 from app.config import settings
 from app.services.logger import logger
 
-PERSONA_PATH = getattr(settings, "PERSONALITY_PATH", "content/personality1.json")
+PERSONA_PATH = settings.PERSONALITY_PATH
 
 def load() -> Dict[str, Any]:
 
