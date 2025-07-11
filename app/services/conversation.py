@@ -25,11 +25,6 @@ def _load() -> Dict[str, Dict[str, List[dict]]]:
 def _save(data: dict) -> None:
     _PATH.write_text(json.dumps({"conversations": data}, ensure_ascii=False, indent=2), encoding="utf-8")
 
-def add(entry: Dict[str, Any]) -> None:
-    convos = _load()
-    convos.append(entry)
-    _save(convos)
-
 def add(post_id: str, comment_id: str, entry: dict) -> None:
     data = _load()
     if post_id not in data:
