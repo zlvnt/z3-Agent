@@ -11,9 +11,9 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from app.config import settings
 from app.services.logger import logger
 
-_DOCS_DIR = Path(getattr(settings, "DOCS_DIR", "docs"))
-_VEC_DIR = Path(getattr(settings, "VECTOR_DIR", "data/vector_store"))
-_MODEL = getattr(settings, "MODEL_NAME", "gemini-2.0-flash")
+_DOCS_DIR = Path(settings.DOCS_DIR)
+_VEC_DIR = Path(settings.VECTOR_DIR)
+_MODEL = settings.MODEL_NAME
 
 _RETRIEVER: FAISS | None = None    # cache singleton
 

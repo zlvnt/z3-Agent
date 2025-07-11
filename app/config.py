@@ -31,6 +31,11 @@ class Settings(BaseSettings):
     GRAPH_API_VERSION: str = Field("18.0", env="GRAPH_API_VERSION")
     INSTAGRAM_API_BASE_URL: str = Field("https://graph.facebook.com", env="INSTAGRAM_API_BASE_URL")
 
+    #vectorfile
+    DOCS_DIR: str = Field("docs", env="DOCS_DIR")
+    VECTOR_DIR: str = Field("data/vector_store", env="VECTOR_DIR")
+    MODEL_NAME: str = Field("gemini-2.0-flash", env="MODEL_NAME")
+
     class Config:
         env_file = ".env"
         case_sensitive = False
