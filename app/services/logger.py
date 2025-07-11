@@ -5,7 +5,7 @@ import structlog
 from app.config import settings  
 
 
-def _setup_logging() -> None:
+def setup_logging() -> None:
 
     log_level = settings.LOG_LEVEL.upper()     
 
@@ -46,9 +46,6 @@ def _setup_logging() -> None:
         ),
         cache_logger_on_first_use=True,
     )
-
-
-_setup_logging()
 
 # p
 logger = structlog.get_logger()

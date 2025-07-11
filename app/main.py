@@ -3,12 +3,12 @@ from fastapi import FastAPI
 
 from app.api import router
 from app.config import settings
-from app.services.logger import _setup_logging, logger
+from app.services.logger import setup_logging, logger
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Inisialisasi resource/log startup
-    _setup_logging()
+    setup_logging()
     logger.info("FastAPI started", env=getattr(settings, "ENV", "production"))
     yield
     # Cleanup/log shutdown
