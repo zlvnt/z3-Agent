@@ -21,7 +21,6 @@ class Settings(BaseSettings):
 
     # Path config
     CONVERSATIONS_PATH: str = Field("data/conversations.json", env="CONVERSATIONS_PATH")
-    PERSONALITY_PATH: str = Field("content/personality1.json", env="PERSONALITY_PATH")
 
     # Pr path
     REPLY_PROMPT_PATH: str = Field("content/reply-prompt.txt", env="REPLY_PROMPT_PATH")
@@ -34,7 +33,6 @@ class Settings(BaseSettings):
     #vectorfile
     DOCS_DIR: str = Field("docs", env="DOCS_DIR")
     VECTOR_DIR: str = Field("data/vector_store", env="VECTOR_DIR")
-    MODEL_NAME: str = Field("gemini-2.0-flash", env="MODEL_NAME")
 
     #Persona
     PERSONALITY_PATH: str = Field("content/personality1.json", env="PERSONALITY_PATH")
