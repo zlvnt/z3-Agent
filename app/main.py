@@ -22,4 +22,4 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.include_router(router, prefix="/")
+app.include_router(router, prefix="/api")
