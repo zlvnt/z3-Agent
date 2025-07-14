@@ -17,7 +17,7 @@ def _verify_signature(secret: str, body: bytes, header_sig: str) -> None:
 
 # ─────────────────────────── handshake GET ─────────────────────────
 @router.get(
-    "/webhook",
+    "/",
     summary="Webhook verification handshake",
     response_class=Response,
 )
@@ -35,7 +35,7 @@ async def verify_webhook(
 
 # ──────────────────────────── receive POST ─────────────────────────
 @router.post(
-    "/webhook",
+    "/",
     summary="Receive Instagram events",
     status_code=status.HTTP_202_ACCEPTED,
 )
