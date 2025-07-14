@@ -1,48 +1,52 @@
 from functools import lru_cache
 from typing import Optional
-from pydantic import BaseSettings, Field
+from pydantic_settings import BaseSettings
+from pydantic import Field
 
 
 class Settings(BaseSettings):
     # Instagram Graph API
-    INSTAGRAM_ACCESS_TOKEN: str = Field(..., env="INSTAGRAM_ACCESS_TOKEN")
-    INSTAGRAM_ACCOUNT_ID: str = Field(..., env="INSTAGRAM_ACCOUNT_ID")
-    VERIFY_TOKEN: str = Field(..., env="VERIFY_TOKEN")
-    APP_SECRET: str = Field("", env="APP_SECRET")
+    INSTAGRAM_ACCESS_TOKEN: str = Field(..., alias="INSTAGRAM_ACCESS_TOKEN")
+    INSTAGRAM_ACCOUNT_ID: str = Field(..., alias="INSTAGRAM_ACCOUNT_ID")
+    VERIFY_TOKEN: str = Field(..., alias="VERIFY_TOKEN")
+    APP_SECRET: str = Field("", alias="APP_SECRET")
 
     # AI Model config
-    GEMINI_API_KEY: Optional[str] = Field(None, env="GEMINI_API_KEY")
-    MODEL_NAME: str = Field(..., env="MODEL_NAME")
+    GEMINI_API_KEY: Optional[str] = Field(None, alias="GEMINI_API_KEY")
+    MODEL_NAME: str = Field(..., alias="MODEL_NAME")
 
-    BOT_USERNAME: str = Field("z3_agent", env="BOT_USERNAME")
+    BOT_USERNAME: str = Field("z3_agent", alias="BOT_USERNAME")
 
     # Logging
-    LOG_LEVEL: str = Field("INFO", env="LOG_LEVEL")
+    LOG_LEVEL: str = Field("INFO", alias="LOG_LEVEL")
 
     # Path config
-    CONVERSATIONS_PATH: str = Field("data/conversations.json", env="CONVERSATIONS_PATH")
+    CONVERSATIONS_PATH: str = Field("data/conversations.json", alias="CONVERSATIONS_PATH")
 
     # Pr path
-    REPLY_PROMPT_PATH: str = Field("content/reply-prompt.txt", env="REPLY_PROMPT_PATH")
-    SUPERVISOR_PROMPT_PATH: str = Field("content/supervisor-prompt.txt", env="SUPERVISOR_PROMPT_PATH")
+    REPLY_PROMPT_PATH: str = Field("content/reply-prompt.txt", alias="REPLY_PROMPT_PATH")
+    SUPERVISOR_PROMPT_PATH: str = Field("content/supervisor-prompt.txt", alias="SUPERVISOR_PROMPT_PATH")
 
     # Graph API Version
-    GRAPH_API_VERSION: str = Field("18.0", env="GRAPH_API_VERSION")
-    INSTAGRAM_API_BASE_URL: str = Field("https://graph.facebook.com", env="INSTAGRAM_API_BASE_URL")
+    GRAPH_API_VERSION: str = Field("18.0", alias="GRAPH_API_VERSION")
+    INSTAGRAM_API_BASE_URL: str = Field("https://graph.facebook.com", alias="INSTAGRAM_API_BASE_URL")
 
     #vectorfile
-    DOCS_DIR: str = Field("docs", env="DOCS_DIR")
-    VECTOR_DIR: str = Field("data/vector_store", env="VECTOR_DIR")
+    DOCS_DIR: str = Field("docs", alias="DOCS_DIR")
+    VECTOR_DIR: str = Field("data/vector_store", alias="VECTOR_DIR")
 
     #Persona
-    PERSONALITY_PATH: str = Field("content/personality1.json", env="PERSONALITY_PATH")
+    PERSONALITY_PATH: str = Field("content/personality1.json", alias="PERSONALITY_PATH")
 
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "case_sensitive": False,
+    }
 
-@lru_cache()
-def get_settings():
+@lru_cache(maxsize=None)
+def get_settings() -> Settings:
     return Settings()
 
-settings = get_settings()
+# public instance
+settings: Settings = get_settings()
