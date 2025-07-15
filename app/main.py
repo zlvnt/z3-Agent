@@ -11,6 +11,7 @@ async def lifespan(app: FastAPI):
     setup_logging()
     logger.info("FastAPI started", env=getattr(settings, "ENV", "production"))
     yield
+    print(">>> after yield")
     # Cleanup/log shutdown
     logger.info("FastAPI shutdown")
 
