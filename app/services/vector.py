@@ -15,28 +15,22 @@ from app.services.logger import logger
 _DOCS_DIR = Path(settings.DOCS_DIR)
 _VEC_DIR = Path(settings.VECTOR_DIR)
 
-
 def _index_exists() -> bool:
     return (_VEC_DIR / "index.faiss").exists()
-
 
 @lru_cache(maxsize=1)
 def _get_embeddings():
     from langchain_google_genai import GoogleGenerativeAIEmbeddings
-
     return GoogleGenerativeAIEmbeddings(
         model=settings.MODEL_NAME, google_api_key=settings.GEMINI_API_KEY
     )
 
-
 @lru_cache(maxsize=1)
 def _load_vectordb() -> "FAISS":
     from langchain_community.vectorstores.faiss import FAISS
-
     vectordb = FAISS.load_local(str(_VEC_DIR), _get_embeddings())
     logger.info("FAISS index loaded", path=_VEC_DIR)
     return vectordb
-
 
 def get_retriever() -> "FAISS":
     try:
