@@ -2,7 +2,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from functools import lru_cache
 from langchain.prompts import ChatPromptTemplate
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.config import settings
 from app.services.logger import logger
@@ -14,18 +16,13 @@ _SUPERVISOR_PROMPT = ChatPromptTemplate.from_template(
     Path(settings.SUPERVISOR_PROMPT_PATH).read_text(encoding="utf-8")
 )
 
-_llm: ChatGoogleGenerativeAI | None = None
-
+@lru_cache(maxsize=1)
 def _get_llm() -> ChatGoogleGenerativeAI:
-    global _llm
-    if _llm is None:
-        from langchain_google_genai import ChatGoogleGenerativeAI
-        _llm = ChatGoogleGenerativeAI(
-            model=settings.MODEL_NAME,
-            temperature=0,
-            google_api_key=settings.GEMINI_API_KEY,
-        )
-    return _llm
+    return ChatGoogleGenerativeAI(
+        model=settings.MODEL_NAME,
+        temperature=0,
+        google_api_key=settings.GEMINI_API_KEY,
+    )
 
 def supervisor_route(user_input: str) -> str:
     msg = _SUPERVISOR_PROMPT.format_messages(user_input=user_input)

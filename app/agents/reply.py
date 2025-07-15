@@ -2,7 +2,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Optional
 
+from functools import lru_cache
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.config import settings
 from app.services.logger import logger
@@ -14,18 +16,13 @@ _REPLY_TEMPLATE = ChatPromptTemplate.from_template(
     Path(settings.REPLY_PROMPT_PATH).read_text(encoding="utf-8")
 )
 
-_llm: ChatGoogleGenerativeAI | None = None
-
+@lru_cache(maxsize=1)
 def _get_llm() -> ChatGoogleGenerativeAI:
-    global _llm
-    if _llm is None:
-        from langchain_google_genai import ChatGoogleGenerativeAI
-        _llm = ChatGoogleGenerativeAI(
-            model=settings.MODEL_NAME,
-            temperature=0,
-            google_api_key=settings.GEMINI_API_KEY,
-        )
-    return _llm
+    return ChatGoogleGenerativeAI(
+        model=settings.MODEL_NAME,
+        temperature=0,
+        google_api_key=settings.GEMINI_API_KEY,
+    )
 
 def _build_history_context(
     post_id: str,
