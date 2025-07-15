@@ -1,8 +1,6 @@
 from __future__ import annotations
 from typing import Literal
 
-from app.services.vector import get_retriever
-from app.services.search import search_web
 from app.services.logger import logger
 
 def retrieve_context(
@@ -15,6 +13,8 @@ def retrieve_context(
     contexts = []
 
     if mode in {"docs", "all"}:
+        from app.services.vector import get_retriever
+
         retriever = get_retriever()
         docs = retriever.get_relevant_documents(query, k=k_docs)
         if docs:
@@ -26,6 +26,8 @@ def retrieve_context(
         logger.debug("RAG.docs", found=len(docs))
 
     if mode in {"web", "all"}:
+        from app.services.search import search_web
+
         snippets = search_web(query, k=k_web)
         if snippets:
             context_web = "\n".join(
