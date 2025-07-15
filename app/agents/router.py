@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any
 
 from functools import lru_cache
-from langchain.prompts import ChatPromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.config import settings
