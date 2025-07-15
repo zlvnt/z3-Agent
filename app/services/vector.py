@@ -6,7 +6,7 @@ from typing import List, TYPE_CHECKING
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
 
-if TYPE_CHECKING:  # pragma: no cover - import hint only
+if TYPE_CHECKING: 
     from langchain_community.vectorstores.faiss import FAISS
 
 from app.config import settings
@@ -73,7 +73,7 @@ def _load_raw_docs() -> List[Document]:
     loaders = [
         DirectoryLoader(str(_DOCS_DIR), glob="**/*.md", loader_cls=UnstructuredMarkdownLoader),
         DirectoryLoader(str(_DOCS_DIR), glob="**/*.pdf", loader_cls=UnstructuredPDFLoader),
-        DirectoryLoader(str(_DOCS_DIR), glob="**/*.txt"),   # fallback TextLoader
+        DirectoryLoader(str(_DOCS_DIR), glob="**/*.txt"),
     ]
     docs: List[Document] = []
     for loader in loaders:
