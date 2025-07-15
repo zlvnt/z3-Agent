@@ -8,7 +8,9 @@ from app.services.logger import setup_logging, logger
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Inisialisasi resource/log startup
+    print(">> Startup mulai")
     setup_logging()
+    print("Startup berjalan")
     logger.info("FastAPI started", env=getattr(settings, "ENV", "production"))
     yield
     print(">>> after yield")

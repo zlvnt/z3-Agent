@@ -15,12 +15,17 @@ _REPLY_TEMPLATE = ChatPromptTemplate.from_template(
     Path(settings.REPLY_PROMPT_PATH).read_text(encoding="utf-8")
 )
 
-_llm = ChatGoogleGenerativeAI(
-    model=settings.MODEL_NAME,
-    temperature=0.7,
-    google_api_key=settings.GEMINI_API_KEY,
-)
+_llm: ChatGoogleGenerativeAI | None = None
 
+def _get_llm() -> ChatGoogleGenerativeAI:
+    global _llm
+    if _llm is None:
+        _llm = ChatGoogleGenerativeAI(
+            model=settings.MODEL_NAME,
+            temperature=0,
+            google_api_key=settings.GEMINI_API_KEY,
+        )
+    return _llm
 
 def _build_history_context(
     post_id: str,
@@ -54,7 +59,7 @@ def generate_reply(
             comment=comment,
             context=context_final,
         )
-        ai_msg = _llm.invoke(messages)
+        ai_msg = _get_llm().invoke(messages)
         reply = ai_msg.content.strip()
         logger.info("Generated reply from LLM", comment_id=comment_id)
     except Exception as e:
