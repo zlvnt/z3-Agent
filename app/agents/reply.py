@@ -20,7 +20,7 @@ _REPLY_TEMPLATE = ChatPromptTemplate.from_template(
 def _get_llm() -> ChatGoogleGenerativeAI:
     return ChatGoogleGenerativeAI(
         model=settings.MODEL_NAME,
-        temperature=0,
+        temperature=0.7,
         google_api_key=settings.GEMINI_API_KEY,
     )
 
