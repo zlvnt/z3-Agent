@@ -2,7 +2,6 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.api import router
-print(">> Importing FastAPI app...")
 from app.config import settings
 from app.services.logger import setup_logging, logger
 
