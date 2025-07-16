@@ -2,7 +2,7 @@
 
 {rules}
 
-User: "{user}"
+User: "{comment}"
 
 Informasi tambahan (bisa internal docs atau web):
 {context}
