@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     INSTAGRAM_ACCESS_TOKEN: str = Field(..., alias="INSTAGRAM_ACCESS_TOKEN")
     INSTAGRAM_ACCOUNT_ID: str = Field(..., alias="INSTAGRAM_ACCOUNT_ID")
     VERIFY_TOKEN: str = Field(..., alias="VERIFY_TOKEN")
-    APP_SECRET: str = Field("", alias="APP_SECRET")
+    APP_SECRET: str = Field(..., alias="APP_SECRET")
 
     # AI Model config
     GEMINI_API_KEY: Optional[str] = Field(None, alias="GEMINI_API_KEY")
@@ -44,7 +44,7 @@ class Settings(BaseSettings):
         "case_sensitive": False,
     }
 
-@lru_cache(maxsize=None)
+# Disable cache to force reload .env
 def get_settings() -> Settings:
     return Settings()
 

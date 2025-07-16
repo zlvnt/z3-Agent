@@ -29,7 +29,7 @@ def _get_embeddings():
 def _load_vectordb() -> "FAISS":
     from langchain_community.vectorstores.faiss import FAISS
     vectordb = FAISS.load_local(str(_VEC_DIR), _get_embeddings())
-    logger.info("FAISS index loaded", path=_VEC_DIR)
+    print(f"INFO: FAISS index loaded - path: {_VEC_DIR}")
     return vectordb
 
 def get_retriever() -> "FAISS":
@@ -37,16 +37,16 @@ def get_retriever() -> "FAISS":
         vectordb = _load_vectordb()
     except Exception as e:
         if _index_exists():
-            logger.error("Failed to load FAISS index", error=str(e))
+            print(f"ERROR: Failed to load FAISS index - error: {e}")
             raise
-        logger.warning("Vector index not found, building…")
+        print("WARNING: Vector index not found, building…")
         build_index()
         _load_vectordb.cache_clear()
         vectordb = _load_vectordb()
     return vectordb.as_retriever(search_kwargs={"k": 4})
 
 def build_index() -> None:
-    logger.info("Building vector index from docs", docs_dir=_DOCS_DIR)
+    print(f"INFO: Building vector index from docs - docs_dir: {_DOCS_DIR}")
     docs = _load_raw_docs()
     split_docs = _split_docs(docs)
     from langchain_community.vectorstores.faiss import FAISS
@@ -55,7 +55,7 @@ def build_index() -> None:
 
     _VEC_DIR.mkdir(parents=True, exist_ok=True)
     vectordb.save_local(str(_VEC_DIR))
-    logger.info("Vector index saved", path=_VEC_DIR, total=len(split_docs))
+    print(f"INFO: Vector index saved - path: {_VEC_DIR}, total: {len(split_docs)}")
 
 def _load_raw_docs() -> List[Document]:
     from langchain_community.document_loaders import (
@@ -74,8 +74,8 @@ def _load_raw_docs() -> List[Document]:
         try:
             docs.extend(loader.load())
         except Exception as e:
-            logger.warning("Doc load failed", loader=str(loader), error=str(e))
-    logger.info("Docs loaded", total=len(docs))
+            print(f"WARNING: Doc load failed - loader: {loader}, error: {e}")
+    print(f"INFO: Docs loaded - total: {len(docs)}")
     return docs
 
 def _split_docs(docs: List[Document]) -> List[Document]:

@@ -16,7 +16,7 @@ def load() -> Dict[str, Any]:
             data = json.load(f)
         return data
     except Exception as e:
-        logger.warning("Failed to load personality JSON, using fallback", error=str(e))
+        print(f"WARNING: Failed to load personality JSON, using fallback - error: {e}")
         return {}
 
 def persona_intro() -> str:

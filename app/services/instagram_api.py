@@ -18,10 +18,10 @@ def upload_reply(comment_id: str, message: str) -> dict:
         resp = requests.post(url, data=payload, timeout=10)
         result = resp.json()
         if resp.status_code != 200 or "error" in result:
-            logger.error("Failed to reply Instagram comment", result=result)
+            print(f"ERROR: Failed to reply Instagram comment - result: {result}")
         else:
-            logger.info("Reply sent to Instagram comment", comment_id=comment_id)
+            print(f"INFO: Reply sent to Instagram comment - comment_id: {comment_id}")
         return result
     except Exception as e:
-        logger.exception("Upload reply to Instagram failed")
+        print(f"ERROR: Upload reply to Instagram failed - {e}")
         return {"error": str(e)}

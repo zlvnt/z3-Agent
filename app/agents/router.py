@@ -29,7 +29,7 @@ def _get_llm() -> ChatGoogleGenerativeAI:
 def supervisor_route(user_input: str) -> str:
     msg = _SUPERVISOR_PROMPT.format_messages(user_input=user_input)
     decision = _get_llm().invoke(msg).content.strip().lower()
-    logger.info("Supervisor decided route", route=decision)
+    # logger.info("Supervisor decided route", route=decision)
     if decision.startswith(("internal_doc", "rag")):
         return "docs"
     if decision.startswith(("web_search", "websearch")):
@@ -46,7 +46,7 @@ def handle(
     **kwargs: Any,
 ) -> str:
     mode = supervisor_route(comment)
-    logger.debug("Route decision", mode=mode)
+    # logger.debug("Route decision", mode=mode)
 
     context = ""
     if mode in {"docs", "web", "all"}:
@@ -61,5 +61,5 @@ def handle(
         context=context,
     )
 
-    logger.info("Reply sent", mode=mode)
+    print(f"INFO: Reply sent - mode: {mode}")
     return reply

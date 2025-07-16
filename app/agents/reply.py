@@ -60,9 +60,9 @@ def generate_reply(
         )
         ai_msg = _get_llm().invoke(messages)
         reply = ai_msg.content.strip()
-        logger.info("Generated reply from LLM", comment_id=comment_id)
+        print(f"INFO: Generated reply from LLM - comment_id: {comment_id}")
     except Exception as e:
-        logger.error("LLM reply failed", error=str(e))
+        print(f"ERROR: LLM reply failed - error: {e}")
         reply = "Maaf, sistem gagal membuat balasan otomatis."
 
     # Simpan

@@ -11,15 +11,15 @@ _PATH = Path(settings.CONVERSATIONS_PATH)
 
 def _load() -> Dict[str, Dict[str, List[dict]]]:
     if not _PATH.exists():
-        logger.info("Conversations file not found", path=str(_PATH))
+        print(f"INFO: Conversations file not found - path: {_PATH}")
         return {}
     try:
         data = json.loads(_PATH.read_text(encoding="utf-8"))
         conversations = data.get("conversations", data)
-        logger.debug("Conversations loaded", total=len(conversations))
+        print(f"DEBUG: Conversations loaded - total: {len(conversations)}")
         return conversations
     except Exception as e:
-        logger.warning("Failed to load conversations", error=str(e))
+        print(f"WARNING: Failed to load conversations - error: {e}")
         return {}
 
 def _save(data: dict) -> None:

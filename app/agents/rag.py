@@ -23,7 +23,7 @@ def retrieve_context(
                 for d in docs if d.page_content.strip()
             )
             contexts.append(context_docs)
-        logger.debug("RAG.docs", found=len(docs))
+        print(f"DEBUG: RAG.docs - found: {len(docs)}")
 
     if mode in {"web", "all"}:
         from app.services.search import search_web
@@ -35,10 +35,10 @@ def retrieve_context(
                 for s in snippets if s.strip()
             )
             contexts.append(context_web)
-        logger.debug("RAG.web", found=len(snippets))
+        print(f"DEBUG: RAG.web - found: {len(snippets)}")
 
     if not contexts:
-        logger.warning("No RAG context found", query=query, mode=mode)
+        print(f"WARNING: No RAG context found - query: {query}, mode: {mode}")
         return ""
     return "\n\n".join(contexts)
 
