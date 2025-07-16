@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from app.api import router
+print(">> Importing FastAPI app...")
 from app.config import settings
 from app.services.logger import setup_logging, logger
 
@@ -9,12 +10,9 @@ from app.services.logger import setup_logging, logger
 async def lifespan(app: FastAPI):
     print(">> Startup mulai")
     setup_logging()
-    print("Startup berjalan")
-    logger.info("FastAPI started", env=getattr(settings, "ENV", "production"))
+    print(">> FastAPI startup complete")
     yield
-    print(">>> after yield")
-    # Cleanup/log shutdown
-    logger.info("FastAPI shutdown")
+    print(">>> FastAPI shutdown")
 
 app = FastAPI(
     title="z3 Agent",

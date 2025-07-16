@@ -4,7 +4,9 @@ from typing import Any
 
 from functools import lru_cache
 from langchain_core.prompts import ChatPromptTemplate
+print(">> imported app.agent router")
 from langchain_google_genai import ChatGoogleGenerativeAI
+print(">> imported app.agent router google_genai")
 
 from app.config import settings
 from app.services.logger import logger
