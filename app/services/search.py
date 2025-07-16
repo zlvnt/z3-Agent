@@ -1,9 +1,9 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from langchain_community.tools.ddg_search.tool import DuckDuckGoSearchRun
 
-_search_tool: "DuckDuckGoSearchRun" | None = None
+_search_tool: Union["DuckDuckGoSearchRun", None] = None
 
 def _get_search_tool() -> "DuckDuckGoSearchRun":
     global _search_tool
