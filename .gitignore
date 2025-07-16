@@ -7,8 +7,10 @@ personality.json
 personality1.json
 comments_for_labeling.csv
 labeled_comments.csv
+CLAUDE.md
 
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+claude.md
