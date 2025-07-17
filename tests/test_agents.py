@@ -277,7 +277,7 @@ def interactive_chat():
                 reply = generate_reply(
                     comment=user_input,
                     post_id=session_id,  # Same post_id for all conversation in this session
-                    comment_id=f"interactive_comment_{conversation_count}",
+                    comment_id="interactive_conversation",  # Fixed comment_id for entire session
                     username="interactive_user", 
                     context=context
                 )
