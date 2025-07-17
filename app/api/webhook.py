@@ -55,10 +55,8 @@ async def receive_webhook(
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Missing signature header")
 
     raw_body: bytes = await request.body()
-    # Temporary hardcode correct APP_SECRET
-    correct_secret = "1083a1659fe948799d214da087f1272b"
-    print(f"DEBUG: Using hardcoded APP_SECRET: '{correct_secret}' (length: {len(correct_secret)})")
-    _verify_signature(correct_secret, raw_body, x_hub_signature_256)
+    print(f"DEBUG: Using APP_SECRET from settings (length: {len(settings.APP_SECRET)})")
+    _verify_signature(settings.APP_SECRET, raw_body, x_hub_signature_256)
 
     try:
         payload: dict[str, Any] = json.loads(raw_body)
