@@ -268,7 +268,7 @@ def interactive_chat():
                 
                 # Show conversation history info
                 from app.services.conversation import get_comment_history
-                history = get_comment_history(session_id, f"interactive_comment_{conversation_count}")
+                history = get_comment_history(session_id, "interactive_conversation")
                 if history:
                     print(f"   📚 Using conversation history: {len(history)} previous messages")
                 else:
