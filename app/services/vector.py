@@ -76,14 +76,13 @@ def build_index() -> None:
 def _load_raw_docs() -> List[Document]:
     from langchain_community.document_loaders import (
         DirectoryLoader,
-        UnstructuredMarkdownLoader,
-        UnstructuredPDFLoader,
+        TextLoader,
     )
 
+    # Use simple TextLoader for all file types (more reliable)
     loaders = [
-        DirectoryLoader(str(_DOCS_DIR), glob="**/*.md", loader_cls=UnstructuredMarkdownLoader),
-        DirectoryLoader(str(_DOCS_DIR), glob="**/*.pdf", loader_cls=UnstructuredPDFLoader),
-        DirectoryLoader(str(_DOCS_DIR), glob="**/*.txt"),
+        DirectoryLoader(str(_DOCS_DIR), glob="**/*.md", loader_cls=TextLoader),
+        DirectoryLoader(str(_DOCS_DIR), glob="**/*.txt", loader_cls=TextLoader),
     ]
     docs: List[Document] = []
     for loader in loaders:
