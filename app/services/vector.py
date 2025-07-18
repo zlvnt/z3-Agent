@@ -44,7 +44,11 @@ def _get_embeddings():
 @lru_cache(maxsize=1)
 def _load_vectordb() -> "FAISS":
     from langchain_community.vectorstores.faiss import FAISS
-    vectordb = FAISS.load_local(str(_VEC_DIR), _get_embeddings())
+    vectordb = FAISS.load_local(
+        str(_VEC_DIR), 
+        _get_embeddings(),
+        allow_dangerous_deserialization=True  # Safe because we created the files
+    )
     print(f"INFO: FAISS index loaded - path: {_VEC_DIR}")
     return vectordb
 
