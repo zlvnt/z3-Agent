@@ -17,3 +17,6 @@ __pycache__/
 *.pyo
 *.pyd
 claude.md
+
+# Development and planning files
+prmptcd.md

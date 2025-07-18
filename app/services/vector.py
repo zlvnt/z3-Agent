@@ -20,7 +20,23 @@ def _index_exists() -> bool:
 
 @lru_cache(maxsize=1)
 def _get_embeddings():
+    """Get embedding model with smart fallback support"""
+    # Try HuggingFace embeddings first (best for customer service)
+    try:
+        from langchain_huggingface import HuggingFaceEmbeddings
+        model_name = getattr(settings, 'EMBEDDING_MODEL', 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
+        print(f"INFO: Using HuggingFace embeddings - model: {model_name}")
+        return HuggingFaceEmbeddings(
+            model_name=model_name,
+            model_kwargs={'device': 'cpu'},  # Use CPU for compatibility
+            encode_kwargs={'normalize_embeddings': True}  # Better similarity scores
+        )
+    except Exception as e:
+        print(f"WARNING: HuggingFace embeddings failed, falling back to Gemini - error: {e}")
+    
+    # Fallback to Gemini embeddings
     from langchain_google_genai import GoogleGenerativeAIEmbeddings
+    print(f"INFO: Using Gemini embeddings - model: {settings.MODEL_NAME}")
     return GoogleGenerativeAIEmbeddings(
         model=settings.MODEL_NAME, google_api_key=settings.GEMINI_API_KEY
     )

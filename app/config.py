@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     # AI Model config
     GEMINI_API_KEY: Optional[str] = Field(None, alias="GEMINI_API_KEY")
     MODEL_NAME: str = Field(..., alias="MODEL_NAME")
+    
+    # HuggingFace Embedding Model (local, no API key needed)
+    EMBEDDING_MODEL: str = Field("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2", alias="EMBEDDING_MODEL")
 
     BOT_USERNAME: str = Field("z3_agent", alias="BOT_USERNAME")
 
