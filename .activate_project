@@ -1,8 +1,0 @@
-#!/bin/zsh
-# Project activation script for Instagram AI Agent
-
-echo "🤖 Activating Instagram AI Agent environment..."
-cd /Users/nando/Documents/jk/Instagram_AI_Agent
-source .venv/bin/activate
-echo "✅ Environment activated! Python: $(which python)"
-echo "💡 Use 'deactivate' to exit venv"

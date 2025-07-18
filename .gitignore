@@ -1,5 +1,8 @@
 .venv/
 .env
+.activate_project
+reply-prompt.txt
+supervisor-prompt.txt
 model_rf.pkl
 vectorizer.pkl
 conversations.json
