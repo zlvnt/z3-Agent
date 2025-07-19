@@ -22,4 +22,4 @@ claude.md
 prmptcd.md
 
 prpt/
-data/vector_store/
+vector_store/
