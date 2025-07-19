@@ -20,3 +20,6 @@ claude.md
 
 # Development and planning files
 prmptcd.md
+
+prpt/
+data/vector_store/

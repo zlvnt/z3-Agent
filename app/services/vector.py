@@ -3,7 +3,6 @@ from functools import lru_cache
 from pathlib import Path
 from typing import List, TYPE_CHECKING
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.schema import Document
 
 if TYPE_CHECKING: 
@@ -98,5 +97,23 @@ def _load_raw_docs() -> List[Document]:
     return docs
 
 def _split_docs(docs: List[Document]) -> List[Document]:
-    splitter = RecursiveCharacterTextSplitter(chunk_size=700, chunk_overlap=100)
-    return splitter.split_documents(docs)
+    """Split documents using SemanticChunker for better context preservation"""
+    try:
+        # Try SemanticChunker first (semantic boundaries > character boundaries)
+        from langchain_experimental.text_splitter import SemanticChunker
+        splitter = SemanticChunker(
+            embeddings=_get_embeddings(),
+            breakpoint_threshold_type="percentile"
+        )
+        split_docs = splitter.split_documents(docs)
+        print(f"INFO: Using SemanticChunker - chunks: {len(split_docs)}")
+        return split_docs
+        
+    except Exception as e:
+        # Fallback to RecursiveCharacterTextSplitter for reliability
+        print(f"WARNING: SemanticChunker failed, using fallback - error: {e}")
+        from langchain.text_splitter import RecursiveCharacterTextSplitter
+        splitter = RecursiveCharacterTextSplitter(chunk_size=700, chunk_overlap=100)
+        split_docs = splitter.split_documents(docs)
+        print(f"INFO: Using RecursiveCharacterTextSplitter (fallback) - chunks: {len(split_docs)}")
+        return split_docs
