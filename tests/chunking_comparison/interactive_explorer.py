@@ -410,8 +410,11 @@ def main():
                     compare_llm_contexts(query)
                 else:
                     print("❌ Please enter a valid query")
-            
+
             elif choice == "6":
+                show_stats()
+            
+            elif choice == "7":
                 print("\n👋 Thanks for exploring! Goodbye!")
                 break
             
