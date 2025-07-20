@@ -199,6 +199,127 @@ def compare_chunk_at_index(query: str):
     except Exception as e:
         print(f"❌ Chunk comparison failed: {e}")
 
+def show_complete_llm_context(query: str, method: str):
+    """Show exactly what LLM receives as context"""
+    
+    if not vector_stores or method not in vector_stores:
+        print("❌ Vector stores not loaded or method not available")
+        return
+    
+    print(f"\n" + "="*80)
+    print(f"COMPLETE LLM CONTEXT - {method.upper()}")
+    print(f"Query: '{query}'")
+    print("="*80)
+    
+    try:
+        # Get retriever and documents
+        retriever = vector_stores[method].as_retriever(search_kwargs={"k": 4})
+        docs = retriever.get_relevant_documents(query)
+        
+        # Concatenate all retrieved content (exactly what goes to LLM)
+        complete_context = "\n\n".join([doc.page_content for doc in docs])
+        
+        print(f"\n📄 COMPLETE CONTEXT ({len(complete_context)} chars):")
+        print("="*60)
+        print(complete_context)
+        print("="*60)
+        
+        # Content analysis
+        print(f"\n📊 CONTENT ANALYSIS:")
+        print(f"Total context length: {len(complete_context)} characters")
+        print(f"Number of chunks combined: {len(docs)}")
+        print(f"Contains Q&A pairs: {'Q:' in complete_context and 'A:' in complete_context}")
+        print(f"Contains step procedures: {'Langkah' in complete_context or 'Step' in complete_context}")
+        print(f"Contains contact info: {'1500-600' in complete_context or 'email' in complete_context}")
+        
+        # Information completeness check
+        print(f"\n🔍 INFORMATION COMPLETENESS:")
+        query_lower = query.lower()
+        if 'return' in query_lower or 'refund' in query_lower:
+            has_procedure = 'ajukan' in complete_context.lower() and 'step' in complete_context.lower()
+            has_policy = 'produk yang bisa' in complete_context.lower()
+            has_timeframe = 'hari' in complete_context and 'jam' in complete_context
+            print(f"  Return procedure: {'✅' if has_procedure else '❌'}")
+            print(f"  Policy information: {'✅' if has_policy else '❌'}")
+            print(f"  Timeframe details: {'✅' if has_timeframe else '❌'}")
+        elif 'contact' in query_lower or 'customer service' in query_lower:
+            has_phone = '1500-600' in complete_context
+            has_hours = 'jam' in complete_context and 'operasional' in complete_context
+            has_email = 'email' in complete_context or '@' in complete_context
+            print(f"  Phone number: {'✅' if has_phone else '❌'}")
+            print(f"  Operating hours: {'✅' if has_hours else '❌'}")
+            print(f"  Email contact: {'✅' if has_email else '❌'}")
+        elif 'login' in query_lower or 'akun' in query_lower:
+            has_troubleshooting = 'solusi' in complete_context.lower()
+            has_steps = any(str(i) in complete_context for i in range(1, 6))
+            has_otp = 'otp' in complete_context.lower()
+            print(f"  Troubleshooting steps: {'✅' if has_troubleshooting else '❌'}")
+            print(f"  Numbered steps: {'✅' if has_steps else '❌'}")
+            print(f"  OTP solutions: {'✅' if has_otp else '❌'}")
+        
+        print(f"\n💡 LLM ANSWER POTENTIAL: {'HIGH' if len(complete_context) > 1000 else 'MEDIUM' if len(complete_context) > 500 else 'LOW'}")
+        
+    except Exception as e:
+        print(f"❌ Failed to show LLM context: {e}")
+
+def compare_llm_contexts(query: str):
+    """Compare complete contexts that both methods provide to LLM"""
+    
+    if not vector_stores:
+        print("❌ Vector stores not loaded")
+        return
+    
+    print(f"\n" + "="*80)
+    print(f"LLM CONTEXT COMPARISON")
+    print(f"Query: '{query}'")
+    print("="*80)
+    
+    try:
+        contexts = {}
+        
+        # Get contexts from both methods
+        for method in ["recursive", "semantic"]:
+            retriever = vector_stores[method].as_retriever(search_kwargs={"k": 4})
+            docs = retriever.get_relevant_documents(query)
+            contexts[method] = "\n\n".join([doc.page_content for doc in docs])
+        
+        # Show both contexts
+        for method, context in contexts.items():
+            print(f"\n🔍 {method.upper()} CONTEXT ({len(context)} chars):")
+            print("-" * 50)
+            # Show first 800 chars for comparison
+            preview = context[:800] + "\n... [TRUNCATED FOR DISPLAY]" if len(context) > 800 else context
+            print(preview)
+        
+        # Compare information richness
+        print(f"\n📊 CONTEXT COMPARISON:")
+        for method, context in contexts.items():
+            qa_count = context.count('Q:') + context.count('**Q:')
+            step_count = context.count('Langkah') + context.count('Step')
+            info_density = len(context.split()) / max(len(context.split('\n')), 1)
+            print(f"{method.upper()}:")
+            print(f"  Length: {len(context)} chars")
+            print(f"  Q&A pairs: {qa_count}")
+            print(f"  Step procedures: {step_count}")
+            print(f"  Info density: {info_density:.1f} words/line")
+        
+        # Determine which provides better context
+        recursive_len = len(contexts["recursive"])
+        semantic_len = len(contexts["semantic"])
+        
+        print(f"\n🏆 BETTER CONTEXT FOR LLM:")
+        if semantic_len > recursive_len * 1.5:
+            print("SEMANTIC - Significantly more complete information")
+        elif semantic_len > recursive_len:
+            print("SEMANTIC - More comprehensive context")
+        elif recursive_len > semantic_len:
+            print("RECURSIVE - More concise, focused content")
+        else:
+            print("TIE - Similar context quality")
+            
+    except Exception as e:
+        print(f"❌ Context comparison failed: {e}")
+
 def show_stats():
     """Quick stats: chunk counts, avg sizes"""
     
@@ -233,16 +354,17 @@ def show_stats():
         print(f"❌ Stats generation failed: {e}")
 
 def show_menu():
-    """Display interactive menu"""
+    """Display enhanced interactive menu"""
     print("\n" + "="*50)
-    print("CHUNKING EXPLORER")
+    print("CHUNKING EXPLORER - LLM CONTENT FOCUS")
     print("="*50)
     print("1. Load vector stores")
-    print("2. Test query retrieval")
-    print("3. Browse chunks")
-    print("4. Compare chunk for query")
-    print("5. Show statistics")
-    print("6. Exit")
+    print("2. Test query retrieval (overview)")
+    print("3. Show complete LLM context (recursive)")
+    print("4. Show complete LLM context (semantic)")
+    print("5. Compare LLM contexts side-by-side")
+    print("6. Show statistics")
+    print("7. Exit")
     print("-" * 50)
 
 def main():
@@ -269,20 +391,25 @@ def main():
                     print("❌ Please enter a valid query")
             
             elif choice == "3":
-                method = input("\nMethod (recursive/semantic): ").strip().lower()
-                start_idx = input("Start index (default 0): ").strip()
-                start_idx = int(start_idx) if start_idx.isdigit() else 0
-                browse_chunks(method, start_idx)
-            
-            elif choice == "4":
-                query = input("\nEnter query for detailed comparison: ").strip()
+                query = input("\nEnter query to see recursive LLM context: ").strip()
                 if query:
-                    compare_chunk_at_index(query)
+                    show_complete_llm_context(query, "recursive")
                 else:
                     print("❌ Please enter a valid query")
-            
+
+            elif choice == "4":
+                query = input("\nEnter query to see semantic LLM context: ").strip()
+                if query:
+                    show_complete_llm_context(query, "semantic")
+                else:
+                    print("❌ Please enter a valid query")
+
             elif choice == "5":
-                show_stats()
+                query = input("\nEnter query to compare both LLM contexts: ").strip()
+                if query:
+                    compare_llm_contexts(query)
+                else:
+                    print("❌ Please enter a valid query")
             
             elif choice == "6":
                 print("\n👋 Thanks for exploring! Goodbye!")
