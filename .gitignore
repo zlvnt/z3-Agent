@@ -20,6 +20,10 @@ claude.md
 
 # Development and planning files
 prmptcd.md
+prmpt-3.md
+recursive/
+semantic/
+
 
 prpt/
 vector_store/
