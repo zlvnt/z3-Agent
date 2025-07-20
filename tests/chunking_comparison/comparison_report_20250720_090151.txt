@@ -1,0 +1,461 @@
+=� Starting Chunking Methods A/B Testing...
+=� Docs directory: docs
+>� Test queries: 5
+============================================================
+
+=' Building Recursive Index...
+INFO: Loaded 4 documents for testing
+ Recursive Index: 25 chunks, 599 avg chars, 9.48s
+
+>� Building Semantic Index...
+INFO: Loaded 4 documents for testing
+ Semantic Index: 10 chunks, 1481 avg chars, 5.78s
+
+================================================================================
+ENHANCED ANALYSIS WITH PROCESS TRANSPARENCY
+================================================================================
+
+================================================================================
+CHUNKING PROCESS ANALYSIS
+================================================================================
+
+🔪 RECURSIVE CHUNKING (Character-based):
+
+Chunk 1 (578 chars):
+----------------------------------------
+# Kebijakan Return & Refund - TokoPedia
+
+## Ketentuan Umum Return
+
+### Produk yang BISA di-return:
+- Produk rusak/cacat dari pabrik
+- Produk tidak sesuai deskripsi/foto
+- Produk salah kirim (warna/ukuran/model)
+- Produk tidak lengkap/kurang aksesoris
+- Produk tidak original (untuk Official Store)
+
+#...
+[...continues for 578 total chars]
+
+Chunk 2 (603 chars):
+----------------------------------------
+### Batas waktu pengajuan return:
+- **Elektronik**: 7 hari sejak diterima
+- **Fashion**: 3 hari sejak diterima
+- **Lainnya**: 2 hari sejak diterima
+- **Garansi toko**: Sesuai ketentuan masing-masing toko
+
+## Prosedur Return
+
+### Step 1: Ajukan Return
+1. Buka "Pesanan Saya" → pilih transaksi
+2. Klik ...
+[...continues for 603 total chars]
+
+Chunk 3 (665 chars):
+----------------------------------------
+### Step 3: Kirim Balik Produk
+**Packaging:**
+- Gunakan packaging original jika ada
+- Sertakan semua aksesoris/bonus
+- Print label return dari sistem
+- Foto paket sebelum kirim sebagai bukti
+
+**Pengiriman:**
+- Gunakan kurir yang ditentukan sistem
+- Input resi dalam 3x24 jam
+- Ongkir ditanggung pembe...
+[...continues for 665 total chars]
+
+... and 22 more chunks
+
+🧠 SEMANTIC CHUNKING (Meaning-based):
+
+Chunk 1 (874 chars):
+----------------------------------------
+# Kebijakan Return & Refund - TokoPedia
+
+## Ketentuan Umum Return
+
+### Produk yang BISA di-return:
+- Produk rusak/cacat dari pabrik
+- Produk tidak sesuai deskripsi/foto
+- Produk salah kirim (warna/ukuran/model)
+- Produk tidak lengkap/kurang aksesoris
+- Produk tidak original (untuk Official Store)
+
+#...
+[...continues for 874 total chars]
+
+Chunk 2 (3237 chars):
+----------------------------------------
+Klik "Ajukan Return/Refund"
+3. Pilih alasan return dari dropdown
+4. Upload bukti (foto/video) minimal 3 gambar
+5. Tulis deskripsi masalah detail
+
+### Step 2: Persetujuan Penjual
+- Penjual punya 2x24 jam untuk respond
+- Jika tidak respond → otomatis disetujui
+- Jika ditolak → bisa ajukan banding ke T...
+[...continues for 3237 total chars]
+
+Chunk 3 (1069 chars):
+----------------------------------------
+# Product FAQ - TokoPedia Customer Service Knowledge Base
+
+## Informasi Umum Produk
+
+### Q: Bagaimana cara mencari produk di TokoPedia? **A:** Anda dapat mencari produk dengan 3 cara:
+1. Gunakan search bar di bagian atas halaman
+2. Browse melalui kategori produk di menu utama
+3. Gunakan filter penca...
+[...continues for 1069 total chars]
+
+... and 7 more chunks
+
+📖 CONTEXT COHERENCE ANALYSIS - RecursiveCharacterTextSplitter:
+--------------------------------------------------
+Q&A pairs broken: 1/25 chunks
+Step sequences broken: 0/25 chunks
+Average chunk coherence: 96.0%
+
+📖 CONTEXT COHERENCE ANALYSIS - SemanticChunker:
+--------------------------------------------------
+Q&A pairs broken: 0/10 chunks
+Step sequences broken: 0/10 chunks
+Average chunk coherence: 100.0%
+
+============================================================
+DETAILED RETRIEVAL ANALYSIS: 'Cara return barang rusak?'
+============================================================
+/Users/nando/Documents/jk/Instagram_AI_Agent/tests/chunking_comparison/compare-splitters.py:174: LangChainDeprecationWarning: The method `BaseRetriever.get_relevant_documents` was deprecated in langchain-core 0.1.46 and will be removed in 1.0. Use :meth:`~invoke` instead.
+  recursive_docs = recursive_retriever.get_relevant_documents(query)
+
+📄 RECURSIVE RETRIEVAL RESULTS:
+
+Result 1 (578 chars):
+------------------------------
+# Kebijakan Return & Refund - TokoPedia
+
+## Ketentuan Umum Return
+
+### Produk yang BISA di-return:
+- Produk rusak/cacat dari pabrik
+- Produk tidak sesuai deskripsi/foto
+- Produk salah kirim (warna/ukuran/model)
+- Produk tidak lengkap/kurang aksesoris
+- Produk tidak original (untuk Official Store)
+
+### Produk yang TIDAK BISA di-return:
+- Produk digital (voucher, software, top-up)
+- Makanan, minuman...
+
+Result 2 (634 chars):
+------------------------------
+### Nominal Refund:
+- **100% refund** untuk:
+  - Produk tidak dikirim
+  - Produk palsu dari Official Store
+  - Kesalahan sistem TokoPedia
+  
+- **Refund - ongkir** untuk:
+  - Return karena berubah pikiran
+  - Salah pesan dari pembeli
+  
+- **Partial refund** untuk:
+  - Produk kurang lengkap tapi masih bisa digunakan
+  - Kesepakatan pembeli-penjual
+
+### Refund Ongkir:
+Ongkir di-refund JIKA:
+- Penjual...
+
+Result 3 (379 chars):
+------------------------------
+### Q: Refund partial itu bagaimana?
+**A:** Contoh: Beli 5 item, 1 rusak. Bisa refund hanya untuk 1 item tersebut tanpa return semua.
+
+---
+*Catatan Penting:*
+- Screenshot semua komunikasi dengan penjual
+- Simpan packaging original hingga transaksi selesai
+- Video unboxing sangat membantu klaim
+- Baca deskripsi produk teliti sebelum beli
+
+*Hotline Return/Refund: 1500-600 ext 2*
+
+🧠 SEMANTIC RETRIEVAL RESULTS:
+
+Result 1 (874 chars):
+------------------------------
+# Kebijakan Return & Refund - TokoPedia
+
+## Ketentuan Umum Return
+
+### Produk yang BISA di-return:
+- Produk rusak/cacat dari pabrik
+- Produk tidak sesuai deskripsi/foto
+- Produk salah kirim (warna/ukuran/model)
+- Produk tidak lengkap/kurang aksesoris
+- Produk tidak original (untuk Official Store)
+
+### Produk yang TIDAK BISA di-return:
+- Produk digital (voucher, software, top-up)
+- Makanan, minuman...
+
+Result 2 (864 chars):
+------------------------------
+Klik "Komplain" di detail pesanan
+2. Upload bukti foto/video
+3. Tim kami akan investigasi dalam 2x24 jam
+4. Dana akan dikembalikan 100% jika terbukti palsu
+
+## Metode Pembayaran
+
+### Q: Apa saja metode pembayaran yang tersedia? **A:** 
+- Transfer Bank (BCA, Mandiri, BNI, BRI)
+- Virtual Account
+- E-wallet (GoPay, OVO, DANA, ShopeePay)
+- Kartu Kredit/Debit
+- TokoPedia PayLater (cicilan tanpa kartu k...
+
+Result 3 (3237 chars):
+------------------------------
+Klik "Ajukan Return/Refund"
+3. Pilih alasan return dari dropdown
+4. Upload bukti (foto/video) minimal 3 gambar
+5. Tulis deskripsi masalah detail
+
+### Step 2: Persetujuan Penjual
+- Penjual punya 2x24 jam untuk respond
+- Jika tidak respond → otomatis disetujui
+- Jika ditolak → bisa ajukan banding ke TokoPedia
+
+### Step 3: Kirim Balik Produk
+**Packaging:**
+- Gunakan packaging original jika ada
+- Sert...
+
+📊 CONTENT ANALYSIS:
+Recursive - Avg length: 530 chars
+Semantic  - Avg length: 1658 chars
+
+🔍 COMPLETENESS CHECK:
+Recursive contains 'Langkah': 0 times
+Semantic contains 'Langkah': 0 times
+Recursive contains 'Q:': 1 times
+Semantic contains 'Q:': 7 times
+
+============================================================
+DETAILED RETRIEVAL ANALYSIS: 'Customer service contact info?'
+============================================================
+
+📄 RECURSIVE RETRIEVAL RESULTS:
+
+Result 1 (626 chars):
+------------------------------
+## Level 2: Customer Service
+
+### Live Chat
+- **Jam operasional**: 08:00 - 22:00 WIB
+- **Queue time**: 5-15 menit (peak: 30 menit)
+- **Prioritas untuk**:
+  - Transaksi > Rp 1 juta
+  - Member Gold/Platinum
+  - Case urgent (fraud, hack)
+
+### Call Center
+- **Nomor**: 1500-600
+- **Jam**: 24/7
+- **Panduan IVR**:
+  - Tekan 1: Masalah Pesanan
+  - Tekan 2: Pembayaran & Refund
+  - Tekan 3: Akun & Keamanan
+...
+
+Result 2 (573 chars):
+------------------------------
+# Prosedur Kontak & Eskalasi - TokoPedia Customer Service
+
+## Level 1: Self-Service
+
+### Help Center Online
+- **URL**: help.tokopedia.com
+- **Tersedia**: 24/7
+- **Gunakan untuk**: FAQ, tutorial, kebijakan umum
+
+### Chatbot TOKI
+- **Akses**: Icon chat di app/website
+- **Respon**: Instant
+- **Capabilities**:
+  - Cek status pesanan
+  - Info resi
+  - FAQ automation
+  - Redirect ke agent jika perlu
+
+##...
+
+Result 3 (574 chars):
+------------------------------
+## Kontak Darurat Khusus
+
+### Media Relations (hanya untuk pers):
+- Email: pr@tokopedia.com
+- Tidak melayani komplain user
+
+### Partnership/B2B:
+- Email: partnership@tokopedia.com
+- Untuk kerja sama bisnis only
+
+### Kantor Pusat:
+```
+Tokopedia Tower
+Jl. Prof. Dr. Satrio Kav. 11
+Jakarta 12950
+(Tidak melayani walk-in complaint)
+```
+
+---
+*Tips Terakhir:*
+- Simpan semua komunikasi sebagai bukti
+- Cata...
+
+🧠 SEMANTIC RETRIEVAL RESULTS:
+
+Result 1 (3965 chars):
+------------------------------
+# Prosedur Kontak & Eskalasi - TokoPedia Customer Service
+
+## Level 1: Self-Service
+
+### Help Center Online
+- **URL**: help.tokopedia.com
+- **Tersedia**: 24/7
+- **Gunakan untuk**: FAQ, tutorial, kebijakan umum
+
+### Chatbot TOKI
+- **Akses**: Icon chat di app/website
+- **Respon**: Instant
+- **Capabilities**:
+  - Cek status pesanan
+  - Info resi
+  - FAQ automation
+  - Redirect ke agent jika perlu
+
+##...
+
+Result 2 (1069 chars):
+------------------------------
+# Product FAQ - TokoPedia Customer Service Knowledge Base
+
+## Informasi Umum Produk
+
+### Q: Bagaimana cara mencari produk di TokoPedia? **A:** Anda dapat mencari produk dengan 3 cara:
+1. Gunakan search bar di bagian atas halaman
+2. Browse melalui kategori produk di menu utama
+3. Gunakan filter pencarian (harga, lokasi, rating) untuk hasil lebih spesifik
+
+### Q: Apa itu produk "Ready Stock" dan "Pr...
+
+Result 3 (236 chars):
+------------------------------
+# Troubleshooting Guide - TokoPedia Customer Service
+
+## Masalah Login dan Akun
+
+### Tidak bisa login ke akun
+**Gejala:** Error "Username/password salah" atau "Akun tidak ditemukan"
+
+**Solusi:**
+1. Pastikan email/nomor HP sudah benar
+2.
+
+📊 CONTENT ANALYSIS:
+Recursive - Avg length: 591 chars
+Semantic  - Avg length: 1756 chars
+
+🔍 COMPLETENESS CHECK:
+Recursive contains 'Langkah': 0 times
+Semantic contains 'Langkah': 0 times
+Recursive contains 'Q:': 0 times
+Semantic contains 'Q:': 5 times
+
+=Comparing Retrieval Quality...
+
+=� Testing Query: 'Cara return barang rusak?'
+   Winner: SEMANTIC
+
+=� Testing Query: 'Customer service contact info?'
+   Winner: SEMANTIC
+
+=� Testing Query: 'App error troubleshooting?'
+   Winner: SEMANTIC
+
+=� Testing Query: 'Refund policy details?'
+   Winner: SEMANTIC
+
+=� Testing Query: 'Prosedur eskalasi komplain?'
+   Winner: RECURSIVE
+
+============================================================
+CHUNKING COMPARISON RESULTS
+============================================================
+
+=� METHOD COMPARISON:
+RecursiveCharacterTextSplitter:
+  - Chunks: 25
+  - Avg size: 599 chars
+  - Build time: 9.48s
+
+SemanticChunker:
+  - Chunks: 10
+  - Avg size: 1481 chars
+  - Build time: 5.78s
+
+=� PERFORMANCE ANALYSIS:
+  - Chunk reduction: 60.0% (semantic vs recursive)
+  - Context preservation: BETTER
+  - Build time overhead: -3.7s
+
+=QUERY TEST RESULTS:
+Query: 'Cara return barang rusak?'
+  Recursive: 3 docs, 530 avg chars
+  Semantic:  3 docs, 1658 avg chars
+  Winner: SEMANTIC
+
+Query: 'Customer service contact info?'
+  Recursive: 3 docs, 591 avg chars
+  Semantic:  3 docs, 1756 avg chars
+  Winner: SEMANTIC
+
+Query: 'App error troubleshooting?'
+  Recursive: 3 docs, 642 avg chars
+  Semantic:  3 docs, 1983 avg chars
+  Winner: SEMANTIC
+
+Query: 'Refund policy details?'
+  Recursive: 3 docs, 530 avg chars
+  Semantic:  3 docs, 1658 avg chars
+  Winner: SEMANTIC
+
+Query: 'Prosedur eskalasi komplain?'
+  Recursive: 3 docs, 649 avg chars
+  Semantic:  3 docs, 474 avg chars
+  Winner: RECURSIVE
+
+<� OVERALL ANALYSIS:
+  - Recursive wins: 1
+  - Semantic wins: 4
+  - Ties: 0
+  - Overall winner: SEMANTIC
+
+=� RECOMMENDATION:
+  SemanticChunker - Better context preservation with fewer chunks
+
+============================================================
+
+=� Report saved to: /Users/nando/Documents/jk/Instagram_AI_Agent/tests/chunking_comparison/comparison_report_20250720_090151.txt
+
+ A/B Testing completed successfully!
+(.venv) nando@zns-MacBook-Air Instagram_AI_Agent % 
