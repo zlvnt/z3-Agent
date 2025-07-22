@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Request, BackgroundTasks, HTTPException, Header, Query, Response, status
 from app.config import settings
-from app.agents.router import handle
+from app.chains.conditional_chain import process_with_chain
 from app.services.instagram_api import upload_reply     
 from app.services.logger import logger                
 import hmac, hashlib, json
+import asyncio
 from typing import Any
 
 router = APIRouter()
@@ -86,12 +87,13 @@ def _process_payload(payload: dict[str, Any]) -> None:
                 continue
 
             try:
-                reply_txt = handle(
+                # Use new chain-based processing
+                reply_txt = asyncio.run(process_with_chain(
                     comment=comment_txt,
                     post_id=post_id,
                     comment_id=comment_id,
                     username=username,
-                )
+                ))
                 upload_reply(comment_id, reply_txt)
                 print(f"INFO: Reply sent - post_id: {post_id}, comment_id: {comment_id}, user: {username}")
             except Exception as exc:  # noqa: BLE001
