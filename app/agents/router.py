@@ -45,6 +45,24 @@ def handle(
     username: str,
     **kwargs: Any,
 ) -> str:
+    """
+    @deprecated - Use app.chains.process_with_chain instead
+    
+    This function provides manual orchestration of router → rag → reply flow.
+    It is being replaced by the True Chain implementation in app.chains.conditional_chain.
+    
+    Migration path:
+    OLD: from app.agents.router import handle
+    NEW: from app.chains.conditional_chain import process_with_chain
+    
+    The new chain implementation provides:
+    - Better performance (singleton pattern)
+    - Built-in monitoring & timing
+    - Simplified memory management
+    - Same functionality with improved architecture
+    
+    This function will be removed in a future version.
+    """
     mode = supervisor_route(comment)
     # logger.debug("Route decision", mode=mode)
 
