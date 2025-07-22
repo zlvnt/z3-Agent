@@ -1,7 +1,4 @@
 """
-LangChain conditional chain architecture untuk Instagram AI Agent.
-
-Provides:
 - Structured data models untuk type-safe communication
 - Conditional chain implementation
 - Memory integration strategy
@@ -24,7 +21,23 @@ from .models import (
     ContextOutputType,
 )
 
+from .components import (
+    RouterChain,
+    ContextRetrievalChain,
+    ReplyGenerationChain,
+)
+
+from .conditional import InstagramConditionalChain
+from .memory import MemoryManager
+from .orchestrator import (
+    ChainOrchestrator,
+    get_orchestrator,
+    process_instagram_comment,
+    orchestrator_lifespan,
+)
+
 __all__ = [
+    # Data models
     "RouteDecision",
     "ContextSource", 
     "RouterOutput",
@@ -38,4 +51,21 @@ __all__ = [
     "ChainOutputType",
     "RouterOutputType",
     "ContextOutputType",
+    
+    # Components
+    "RouterChain",
+    "ContextRetrievalChain", 
+    "ReplyGenerationChain",
+    
+    # Main chain
+    "InstagramConditionalChain",
+    
+    # Memory
+    "MemoryManager",
+    
+    # Orchestration
+    "ChainOrchestrator",
+    "get_orchestrator",
+    "process_instagram_comment",
+    "orchestrator_lifespan",
 ]
