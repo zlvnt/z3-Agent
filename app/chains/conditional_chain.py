@@ -7,7 +7,6 @@ dengan LangChain conditional execution pattern.
 
 from typing import Dict, Any, List
 from langchain.base import BaseChain
-from langchain.memory import ConversationBufferWindowMemory
 
 # Import existing functions - keep them as is
 from app.agents.router import supervisor_route
@@ -29,8 +28,6 @@ class InstagramConditionalChain(BaseChain):
     def __init__(self, memory_window: int = 5):
         super().__init__()
         self.memory_window = memory_window
-        # Simple per-user memory storage
-        self._user_memories: Dict[str, ConversationBufferWindowMemory] = {}
     
     @property
     def input_keys(self) -> List[str]:
@@ -70,8 +67,7 @@ class InstagramConditionalChain(BaseChain):
             context=context
         )
         
-        # Step 5: Update memory (simple addition)
-        self._update_memory(username, comment, reply)
+        # Step 5: Memory persistence handled by generate_reply() → conversation.py
         
         # Return simple dictionary
         return {
@@ -80,7 +76,7 @@ class InstagramConditionalChain(BaseChain):
             "processing_info": {
                 "context_used": bool(context),
                 "context_length": len(context),
-                "memory_updated": True
+"memory_handled_by_conversation_service": True
             }
         }
     
@@ -108,55 +104,28 @@ class InstagramConditionalChain(BaseChain):
             print(f"WARNING: Memory context failed: {e}")
             return ""
     
-    def _update_memory(self, username: str, user_msg: str, ai_msg: str) -> None:
-        """
-        Simple memory update - just add to LangChain memory for runtime.
-        Existing conversation.py handles persistence.
-        """
-        try:
-            # Get or create user memory
-            if username not in self._user_memories:
-                self._user_memories[username] = ConversationBufferWindowMemory(
-                    k=self.memory_window,
-                    return_messages=False
-                )
-            
-            # Update LangChain memory (runtime cache)
-            memory = self._user_memories[username]
-            memory.chat_memory.add_user_message(user_msg)
-            memory.chat_memory.add_ai_message(ai_msg)
-            
-            # Persistence handled by generate_reply() → conversation.py
-            
-        except Exception as e:
-            print(f"WARNING: Memory update failed: {e}")
     
-    def get_user_memory_context(self, username: str) -> str:
-        """Get LangChain memory context untuk user"""
-        if username in self._user_memories:
-            return self._user_memories[username].buffer
-        return ""
-    
-    def clear_user_memory(self, username: str) -> bool:
-        """Clear user memory"""
-        if username in self._user_memories:
-            del self._user_memories[username]
-            return True
-        return False
     
     def get_stats(self) -> Dict[str, Any]:
         """Simple stats"""
         return {
-            "active_users": len(self._user_memories),
             "memory_window": self.memory_window,
-            "total_messages": sum(
-                len(mem.chat_memory.messages) 
-                for mem in self._user_memories.values()
-            )
+            "using_conversation_service": True
         }
 
 
-# Simple factory function
+# Singleton pattern for chain instance
+_chain_instance = None
+
+def get_chain() -> InstagramConditionalChain:
+    """Get singleton chain instance"""
+    global _chain_instance
+    if _chain_instance is None:
+        _chain_instance = InstagramConditionalChain(memory_window=5)
+    return _chain_instance
+
+
+# Simple factory function (deprecated - use get_chain instead)
 def create_instagram_chain() -> InstagramConditionalChain:
     """Create configured chain instance"""
     return InstagramConditionalChain(memory_window=5)
@@ -173,7 +142,7 @@ async def process_with_chain(
     Simple async wrapper untuk existing chain.
     Drop-in replacement untuk router.handle
     """
-    chain = create_instagram_chain()
+    chain = get_chain()
     
     result = chain.run({
         "comment": comment,
