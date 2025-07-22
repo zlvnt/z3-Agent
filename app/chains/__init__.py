@@ -1,71 +1,17 @@
 """
-- Structured data models untuk type-safe communication
-- Conditional chain implementation
-- Memory integration strategy
-- FastAPI integration layer
+Simple LangChain conditional chain untuk Instagram AI Agent.
+
+Minimal approach - wrap existing functions dengan proper chain architecture.
 """
 
-from .models import (
-    RouteDecision,
-    ContextSource,
-    RouterOutput,
-    ContextChunk,
-    ContextOutput,
-    ChainInput,
-    ChainOutput,
-    ChainError,
-    MemoryState,
-    ChainInputType,
-    ChainOutputType,
-    RouterOutputType,
-    ContextOutputType,
-)
-
-from .components import (
-    RouterChain,
-    ContextRetrievalChain,
-    ReplyGenerationChain,
-)
-
-from .conditional import InstagramConditionalChain
-from .memory import MemoryManager
-from .orchestrator import (
-    ChainOrchestrator,
-    get_orchestrator,
-    process_instagram_comment,
-    orchestrator_lifespan,
+from .conditional_chain import (
+    InstagramConditionalChain,
+    create_instagram_chain, 
+    process_with_chain
 )
 
 __all__ = [
-    # Data models
-    "RouteDecision",
-    "ContextSource", 
-    "RouterOutput",
-    "ContextChunk",
-    "ContextOutput",
-    "ChainInput",
-    "ChainOutput",
-    "ChainError",
-    "MemoryState",
-    "ChainInputType",
-    "ChainOutputType",
-    "RouterOutputType",
-    "ContextOutputType",
-    
-    # Components
-    "RouterChain",
-    "ContextRetrievalChain", 
-    "ReplyGenerationChain",
-    
-    # Main chain
     "InstagramConditionalChain",
-    
-    # Memory
-    "MemoryManager",
-    
-    # Orchestration
-    "ChainOrchestrator",
-    "get_orchestrator",
-    "process_instagram_comment",
-    "orchestrator_lifespan",
+    "create_instagram_chain",
+    "process_with_chain"
 ]
