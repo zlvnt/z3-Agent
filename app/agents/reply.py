@@ -1,6 +1,6 @@
 from __future__ import annotations
-from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
+import json
 
 from functools import lru_cache
 from langchain_core.prompts import ChatPromptTemplate
@@ -9,14 +9,20 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 print(">> imported app.agent reply google_genai")
 
 from app.config import settings
-from app.services.logger import logger
 from app.services.conversation import add as save_conv, get_comment_history
 from app.prompt.personality import persona_intro, rules_txt
 
-# Load
-_REPLY_TEMPLATE = ChatPromptTemplate.from_template(
-    Path(settings.REPLY_PROMPT_PATH).read_text(encoding="utf-8")
-)
+# Load from new JSON config
+def _get_reply_template():
+    try:
+        with open("content/reply_config.json", encoding="utf-8") as f:
+            config = json.load(f)
+        return config.get("reply_template", "{persona_intro}\n\n{rules}\n\nUser: \"{comment}\"\n\nInformasi tambahan (bisa internal docs atau web):\n{context}\n\nJawaban Admin AI:")
+    except Exception as e:
+        print(f"WARNING: Failed to load reply config, using fallback: {e}")
+        return "{persona_intro}\n\n{rules}\n\nUser: \"{comment}\"\n\nInformasi tambahan (bisa internal docs atau web):\n{context}\n\nJawaban Admin AI:"
+
+_REPLY_TEMPLATE = ChatPromptTemplate.from_template(_get_reply_template())
 
 @lru_cache(maxsize=1)
 def _get_llm() -> ChatGoogleGenerativeAI:

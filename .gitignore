@@ -8,6 +8,7 @@ vectorizer.pkl
 conversations.json
 personality.json
 personality1.json
+reply_config.json
 comments_for_labeling.csv
 labeled_comments.csv
 CLAUDE.md
