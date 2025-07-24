@@ -6,7 +6,7 @@ dengan LangChain conditional execution pattern.
 """
 
 from typing import Dict, Any, List, Callable, Optional
-from langchain.base import BaseChain
+from langchain_core.runnables import Runnable
 import time
 
 # Import existing functions - keep them as is
@@ -15,7 +15,7 @@ from app.agents.rag import retrieve_context
 from app.agents.reply import generate_reply
 
 
-class InstagramConditionalChain(BaseChain):
+class InstagramConditionalChain(Runnable):
     """
     Simple conditional chain yang wrap existing functions.
     
@@ -31,15 +31,7 @@ class InstagramConditionalChain(BaseChain):
         self.memory_window = memory_window
         self.callbacks = callbacks or []
     
-    @property
-    def input_keys(self) -> List[str]:
-        return ["comment", "post_id", "comment_id", "username"]
-    
-    @property
-    def output_keys(self) -> List[str]:
-        return ["reply", "route_used", "processing_info"]
-    
-    def _call(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+    def invoke(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """
         Execute conditional chain dengan existing functions.
         Simple dictionary data flow - no complex models needed.
@@ -187,7 +179,7 @@ async def process_with_chain(
     """
     chain = get_chain()
     
-    result = chain.run({
+    result = chain.invoke({
         "comment": comment,
         "post_id": post_id,
         "comment_id": comment_id,

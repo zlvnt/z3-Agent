@@ -2,13 +2,17 @@
 Comprehensive test suite for InstagramConditionalChain integration.
 Tests the complete chain flow with different scenarios and routing modes.
 """
-
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 import asyncio
 import pytest
 from unittest.mock import patch, AsyncMock, MagicMock
 import time
 
+
 from app.chains.conditional_chain import process_with_chain, get_chain
+
 
 
 class TestChainIntegration:
