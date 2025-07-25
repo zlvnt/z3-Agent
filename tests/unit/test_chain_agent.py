@@ -61,7 +61,7 @@ async def interactive_chain_chat():
                 reply = await process_with_chain(
                     comment=user_input,
                     post_id=session_id,
-                    comment_id=f"msg_{conversation_count}",
+                    comment_id="interactive_session",  # Same comment_id untuk thread
                     username="chain_user"
                 )
                 
