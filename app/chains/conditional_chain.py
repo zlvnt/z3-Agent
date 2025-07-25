@@ -75,7 +75,8 @@ class InstagramConditionalChain(Runnable):
             post_id=post_id,
             comment_id=comment_id,
             username=username,
-            context=context
+            context=context,
+            history_context=memory_context
         )
         reply_duration = time.time() - reply_start
         timing_info["reply_time"] = round(reply_duration, 3)
@@ -100,23 +101,12 @@ class InstagramConditionalChain(Runnable):
     
     def _get_memory_context(self, username: str, post_id: str, comment_id: str) -> str:
         """
-        Simple memory wrapper around existing conversation system.
-        No need to rebuild - just add LangChain compatibility.
+        Simple memory wrapper - reuse existing _build_history_context from reply.py
         """
         try:
-            # Get existing conversation history
-            from app.services.conversation import get_comment_history
-            history = get_comment_history(post_id, comment_id, limit=3)
-            
-            # Format untuk LangChain integration
-            if history:
-                lines = ["Riwayat Percakapan:"]
-                for exchange in history:
-                    lines.append(f"User: {exchange['comment']}")
-                    lines.append(f"z3: {exchange['reply']}")
-                return "\n".join(lines)
-            
-            return ""
+            # Import and use existing working function from reply.py
+            from app.agents.reply import _build_history_context
+            return _build_history_context(post_id, comment_id, limit=3)
             
         except Exception as e:
             print(f"WARNING: Memory context failed: {e}")
