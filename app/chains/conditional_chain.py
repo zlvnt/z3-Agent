@@ -101,12 +101,11 @@ class InstagramConditionalChain(Runnable):
     
     def _get_memory_context(self, username: str, post_id: str, comment_id: str) -> str:
         """
-        Simple memory wrapper - reuse existing _build_history_context from reply.py
+        Get conversation history using centralized history service
         """
         try:
-            # Import and use existing working function from reply.py
-            from app.agents.reply import _build_history_context
-            return _build_history_context(post_id, comment_id, limit=3)
+            from app.services.history_service import ConversationHistoryService
+            return ConversationHistoryService.get_history_context(post_id, comment_id)
             
         except Exception as e:
             print(f"WARNING: Memory context failed: {e}")
