@@ -67,20 +67,6 @@ def _get_llm() -> ChatGoogleGenerativeAI:
         google_api_key=settings.GEMINI_API_KEY,
     )
 
-def _build_history_context(
-    post_id: str,
-    comment_id: str,
-    limit: int = 5
-) -> str:
-    history = get_comment_history(post_id, comment_id)
-    if not history:
-        return ""
-    slices = history[-limit:]
-    ctx_lines = ["Riwayat Percakapan Sebelumnya:"]
-    for h in slices:
-        ctx_lines.append(f"{h['user']}: {h['comment']}")
-        ctx_lines.append(f"z3: {h['reply']}")
-    return "\n".join(ctx_lines)
 
 def generate_reply(
     comment: str,
@@ -93,7 +79,8 @@ def generate_reply(
     try:
         # Use passed history_context or build internally as fallback
         if history_context is None:
-            history_context = _build_history_context(post_id, comment_id, limit=5)
+            from app.services.history_service import ConversationHistoryService
+            history_context = ConversationHistoryService.get_optimized_history_for_reply(post_id, comment_id)
         
         # Use optimized customer service template (Opus recommendations)  
         template_vars = _format_optimized_template(
