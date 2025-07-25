@@ -128,9 +128,9 @@ def interactive_chat():
                 # Show detailed legacy orchestration steps
                 print("🎯 [STEP 1] Routing Decision")
                 # Get history for better routing decision
-                from app.agents.reply import _build_history_context
+                from app.services.history_service import ConversationHistoryService
                 try:
-                    history_context = _build_history_context(session_id, f"legacy_msg_{conversation_count}", limit=3)
+                    history_context = ConversationHistoryService.get_history_context(session_id, f"legacy_msg_{conversation_count}")
                 except:
                     history_context = ""
                 
