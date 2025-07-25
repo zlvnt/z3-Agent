@@ -103,6 +103,13 @@ def generate_reply(
         )
 
         messages = _REPLY_TEMPLATE.format_messages(**template_vars)
+        
+        # Show final prompt before LLM generation
+        print(f"🔍 FINAL PROMPT TO LLM:")
+        print(f"{'='*60}")
+        print(messages[0].content)
+        print(f"{'='*60}")
+        
         ai_msg = _get_llm().invoke(messages)
         reply = ai_msg.content.strip()
         print(f"INFO: Generated professional CS reply - comment_id: {comment_id}")
