@@ -87,12 +87,15 @@ def generate_reply(
     post_id: str,
     comment_id: str,
     username: str,
-    context: Optional[str] = ""
+    context: Optional[str] = "",
+    history_context: Optional[str] = None
 ) -> str:
     try:
-        history_context = _build_history_context(post_id, comment_id, limit=5)
+        # Use passed history_context or build internally as fallback
+        if history_context is None:
+            history_context = _build_history_context(post_id, comment_id, limit=5)
         
-        # Use optimized customer service template (Opus recommendations)
+        # Use optimized customer service template (Opus recommendations)  
         template_vars = _format_optimized_template(
             comment=comment,
             context=context or "",
