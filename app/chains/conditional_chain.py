@@ -45,14 +45,21 @@ class InstagramConditionalChain(Runnable):
         timing_info = {}
         total_start = time.time()
         
-        # Step 1: Router decision (existing function)
+        # Step 1: Get memory context first (needed for router decision)
+        memory_start = time.time()
+        memory_context = self._get_memory_context(username, post_id, comment_id)
+        memory_duration = time.time() - memory_start
+        timing_info["memory_time"] = round(memory_duration, 3)
+        self._call_callbacks("memory", memory_duration)
+        
+        # Step 2: Router decision with history context
         router_start = time.time()
-        route = supervisor_route(comment)
+        route = supervisor_route(comment, history_context=memory_context)
         router_duration = time.time() - router_start
         timing_info["router_time"] = round(router_duration, 3)
         self._call_callbacks("router", router_duration)
         
-        # Step 2: Conditional RAG (existing function)
+        # Step 3: Conditional RAG (existing function)
         rag_start = time.time()
         context = ""
         if route in {"docs", "web", "all"}:
@@ -60,13 +67,6 @@ class InstagramConditionalChain(Runnable):
         rag_duration = time.time() - rag_start
         timing_info["rag_time"] = round(rag_duration, 3)
         self._call_callbacks("rag", rag_duration)
-        
-        # Step 3: Get memory context (simple wrapper)
-        memory_start = time.time()
-        memory_context = self._get_memory_context(username, post_id, comment_id)
-        memory_duration = time.time() - memory_start
-        timing_info["memory_time"] = round(memory_duration, 3)
-        self._call_callbacks("memory", memory_duration)
         
         # Step 4: Reply generation (existing function) 
         reply_start = time.time()

@@ -26,10 +26,20 @@ def _get_llm() -> ChatGoogleGenerativeAI:
         google_api_key=settings.GEMINI_API_KEY,
     )
 
-def supervisor_route(user_input: str) -> str:
-    msg = _SUPERVISOR_PROMPT.format_messages(user_input=user_input)
+def supervisor_route(user_input: str, history_context: str = "") -> str:
+    """
+    Enhanced supervisor routing with business context and conversation history
+    """
+    msg = _SUPERVISOR_PROMPT.format_messages(
+        user_input=user_input,
+        history_context=history_context or "No previous conversation"
+    )
     decision = _get_llm().invoke(msg).content.strip().lower()
-    # logger.info("Supervisor decided route", route=decision)
+    
+    # Debug logging untuk monitoring
+    print(f"DEBUG: Supervisor decision: '{decision}' for query: '{user_input[:50]}...'")
+    
+    # Map supervisor decision ke internal routing
     if decision.startswith(("internal_doc", "rag")):
         return "docs"
     if decision.startswith(("web_search", "websearch")):
@@ -63,7 +73,14 @@ def handle(
     
     This function will be removed in a future version.
     """
-    mode = supervisor_route(comment)
+    # For legacy compatibility - get basic history context
+    from app.agents.reply import _build_history_context
+    try:
+        history_context = _build_history_context(post_id, comment_id, limit=3)
+    except:
+        history_context = ""
+    
+    mode = supervisor_route(comment, history_context=history_context)
     # logger.debug("Route decision", mode=mode)
 
     context = ""

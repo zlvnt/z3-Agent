@@ -127,7 +127,14 @@ def interactive_chat():
             try:
                 # Show detailed legacy orchestration steps
                 print("🎯 [STEP 1] Routing Decision")
-                route = supervisor_route(user_input)
+                # Get history for better routing decision
+                from app.agents.reply import _build_history_context
+                try:
+                    history_context = _build_history_context(session_id, f"legacy_msg_{conversation_count}", limit=3)
+                except:
+                    history_context = ""
+                
+                route = supervisor_route(user_input, history_context=history_context)
                 print(f"   Decision: {route}")
                 print()
                 
