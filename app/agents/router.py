@@ -74,9 +74,9 @@ def handle(
     This function will be removed in a future version.
     """
     # For legacy compatibility - get basic history context
-    from app.agents.reply import _build_history_context
+    from app.services.history_service import ConversationHistoryService
     try:
-        history_context = _build_history_context(post_id, comment_id, limit=3)
+        history_context = ConversationHistoryService.get_history_context(post_id, comment_id)
     except:
         history_context = ""
     
