@@ -9,8 +9,7 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 print(">> imported app.agent reply google_genai")
 
 from app.config import settings
-from app.services.conversation import add as save_conv, get_comment_history
-from app.prompt.personality import persona_intro, rules_txt
+from app.services.conversation import add as save_conv
 
 # Load from professional customer service JSON config
 def _get_reply_template():

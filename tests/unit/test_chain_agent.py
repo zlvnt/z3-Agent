@@ -6,12 +6,12 @@ import asyncio
 import time
 
 # Legacy imports (minimal - only for legacy mode)
-from app.agents.router import handle, supervisor_route
+from app.agents.router import supervisor_route
 from app.agents.reply import generate_reply
 from app.agents.rag import retrieve_context
 
-# NEW: Chain imports
-from app.chains.conditional_chain import process_with_chain, get_chain
+# Chain imports
+from app.chains.conditional_chain import process_with_chain
 
 async def interactive_chain_chat():
     """NEW: Interactive chat using Chain system"""

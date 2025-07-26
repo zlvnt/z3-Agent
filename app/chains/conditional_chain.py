@@ -47,7 +47,7 @@ class InstagramConditionalChain(Runnable):
         
         # Step 1: Get memory context first (needed for router decision)
         memory_start = time.time()
-        memory_context = self._get_memory_context(username, post_id, comment_id)
+        memory_context = self._get_memory_context(post_id, comment_id)
         memory_duration = time.time() - memory_start
         timing_info["memory_time"] = round(memory_duration, 3)
         self._call_callbacks("memory", memory_duration)
@@ -99,7 +99,7 @@ class InstagramConditionalChain(Runnable):
             }
         }
     
-    def _get_memory_context(self, username: str, post_id: str, comment_id: str) -> str:
+    def _get_memory_context(self, post_id: str, comment_id: str) -> str:
         """
         Get conversation history using centralized history service
         """
