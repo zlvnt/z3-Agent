@@ -2,7 +2,9 @@
 Example monitoring callback untuk InstagramConditionalChain.
 Demo cara menggunakan callback system untuk performance tracking.
 """
-
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from app.chains.conditional_chain import get_chain
 import asyncio
 
