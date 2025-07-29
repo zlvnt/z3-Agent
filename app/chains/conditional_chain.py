@@ -1,15 +1,12 @@
 """
-Simple Conditional Chain implementation untuk Instagram AI Agent.
-
-Minimal approach: wrap existing router → rag → reply functions
-dengan LangChain conditional execution pattern.
+wrap existing router → rag → reply functions
+with LangChain conditional execution pattern.
 """
 
 from typing import Dict, Any, List, Callable, Optional
 from langchain_core.runnables import Runnable
 import time
 
-# Import existing functions - keep them as is
 from app.agents.router import supervisor_route
 from app.agents.rag import retrieve_context  
 from app.agents.reply import generate_reply
@@ -17,8 +14,7 @@ from app.agents.reply import generate_reply
 
 class InstagramConditionalChain(Runnable):
     """
-    Simple conditional chain yang wrap existing functions.
-    
+    Simple conditional chain:
     Flow:
     1. Router decision (existing function)
     2. Conditional RAG (existing function) 
@@ -33,8 +29,7 @@ class InstagramConditionalChain(Runnable):
     
     def invoke(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Execute conditional chain dengan existing functions.
-        Simple dictionary data flow - no complex models needed.
+        Execute conditional chain with existing functions.
         """
         comment = inputs["comment"]
         post_id = inputs["post_id"] 
@@ -45,21 +40,21 @@ class InstagramConditionalChain(Runnable):
         timing_info = {}
         total_start = time.time()
         
-        # Step 1: Get memory context first (needed for router decision)
+        # Step 1: Get memory context first
         memory_start = time.time()
         memory_context = self._get_memory_context(post_id, comment_id)
         memory_duration = time.time() - memory_start
         timing_info["memory_time"] = round(memory_duration, 3)
         self._call_callbacks("memory", memory_duration)
         
-        # Step 2: Router decision with history context
+        # Step 2: Router decision
         router_start = time.time()
         route = supervisor_route(comment, history_context=memory_context)
         router_duration = time.time() - router_start
         timing_info["router_time"] = round(router_duration, 3)
         self._call_callbacks("router", router_duration)
         
-        # Step 3: Conditional RAG (existing function)
+        # Step 3: Conditional RAG
         rag_start = time.time()
         context = ""
         if route in {"docs", "web", "all"}:
@@ -68,7 +63,7 @@ class InstagramConditionalChain(Runnable):
         timing_info["rag_time"] = round(rag_duration, 3)
         self._call_callbacks("rag", rag_duration)
         
-        # Step 4: Reply generation (existing function) 
+        # Step 4: Reply generation
         reply_start = time.time()
         reply = generate_reply(
             comment=comment,
@@ -100,9 +95,7 @@ class InstagramConditionalChain(Runnable):
         }
     
     def _get_memory_context(self, post_id: str, comment_id: str) -> str:
-        """
-        Get conversation history using centralized history service
-        """
+        # Get conversation history using centralized history service
         try:
             from app.services.history_service import ConversationHistoryService
             return ConversationHistoryService.get_history_context(post_id, comment_id)
@@ -114,7 +107,6 @@ class InstagramConditionalChain(Runnable):
     
     
     def _call_callbacks(self, step_name: str, duration: float) -> None:
-        """Call monitoring callbacks with step timing info"""
         for callback in self.callbacks:
             try:
                 callback(step_name, duration)
@@ -122,11 +114,9 @@ class InstagramConditionalChain(Runnable):
                 print(f"WARNING: Callback failed for step {step_name}: {e}")
     
     def add_callback(self, callback: Callable) -> None:
-        """Add monitoring callback"""
         self.callbacks.append(callback)
     
     def get_stats(self) -> Dict[str, Any]:
-        """Simple stats"""
         return {
             "memory_window": self.memory_window,
             "using_conversation_service": True,
@@ -138,12 +128,10 @@ class InstagramConditionalChain(Runnable):
 _chain_instance = None
 
 def get_chain(callbacks: Optional[List[Callable]] = None) -> InstagramConditionalChain:
-    """Get singleton chain instance with optional callbacks"""
     global _chain_instance
     if _chain_instance is None:
         _chain_instance = InstagramConditionalChain(memory_window=5, callbacks=callbacks)
     elif callbacks:
-        # Add new callbacks to existing instance
         for callback in callbacks:
             _chain_instance.add_callback(callback)
     return _chain_instance
@@ -151,11 +139,10 @@ def get_chain(callbacks: Optional[List[Callable]] = None) -> InstagramConditiona
 
 # Simple factory function (deprecated - use get_chain instead)
 def create_instagram_chain() -> InstagramConditionalChain:
-    """Create configured chain instance"""
     return InstagramConditionalChain(memory_window=5)
 
 
-# Simple async wrapper untuk FastAPI compatibility
+# Simple async wrapper for FastAPI compatibility
 async def process_with_chain(
     comment: str,
     post_id: str, 
@@ -163,10 +150,6 @@ async def process_with_chain(
     username: str,
     enable_monitoring: bool = True
 ) -> str:
-    """
-    Simple async wrapper untuk existing chain.
-    Drop-in replacement untuk router.handle dengan monitoring support.
-    """
     # Setup monitoring callbacks if enabled
     callbacks = []
     if enable_monitoring:
