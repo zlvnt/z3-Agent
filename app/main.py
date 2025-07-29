@@ -28,16 +28,16 @@ app.include_router(router, prefix="/api")
 # Health check endpoints
 @app.get("/health")
 async def health_check():
-    """Health check endpoint untuk load balancer"""
+    """Health check endpoint"""
     return get_health_status()
 
 @app.get("/ready")  
 async def readiness_check():
-    """Readiness check endpoint untuk Kubernetes"""
+    """Readiness check endpoint for Kubernetes"""
     return get_readiness_status()
 
 @app.get("/metrics/basic")
 async def basic_metrics():
-    """Basic metrics endpoint untuk monitoring"""
+    """Basic metrics endpoint"""
     metrics = get_metrics_instance()
     return metrics.get_stats()
