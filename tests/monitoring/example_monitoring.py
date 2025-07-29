@@ -69,7 +69,7 @@ async def demo_monitoring():
         try:
             # Simulate chain call dengan mock
             with patch_chain_functions():
-                result = chain.run({
+                result = chain.invoke({
                     "comment": test_case["comment"],
                     "post_id": test_case["post_id"],
                     "comment_id": test_case["comment_id"],
@@ -91,7 +91,7 @@ def patch_chain_functions():
     import time
     import random
     
-    def mock_supervisor_route(comment):
+    def mock_supervisor_route(comment, history_context=""):
         time.sleep(random.uniform(0.1, 0.3))  # Simulate router time
         if "hello" in comment.lower():
             return "direct"
@@ -104,7 +104,7 @@ def patch_chain_functions():
         time.sleep(random.uniform(0.5, 1.2))  # Simulate RAG time
         return f"Context for {mode} mode"
     
-    def mock_generate_reply(comment, post_id, comment_id, username, context=""):
+    def mock_generate_reply(comment, post_id, comment_id, username, context="", history_context=""):
         time.sleep(random.uniform(1.0, 2.5))  # Simulate reply generation
         return f"Generated reply for: {comment[:30]}..."
     
