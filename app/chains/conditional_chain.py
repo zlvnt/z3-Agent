@@ -160,13 +160,23 @@ async def process_with_chain(
     comment: str,
     post_id: str, 
     comment_id: str,
-    username: str
+    username: str,
+    enable_monitoring: bool = True
 ) -> str:
     """
     Simple async wrapper untuk existing chain.
-    Drop-in replacement untuk router.handle
+    Drop-in replacement untuk router.handle dengan monitoring support.
     """
-    chain = get_chain()
+    # Setup monitoring callbacks if enabled
+    callbacks = []
+    if enable_monitoring:
+        try:
+            from app.monitoring.callbacks import file_logger_callback, debug_callback
+            callbacks = [file_logger_callback, debug_callback]
+        except ImportError:
+            print("WARNING: Monitoring callbacks not available")
+    
+    chain = get_chain(callbacks=callbacks)
     
     result = chain.invoke({
         "comment": comment,
