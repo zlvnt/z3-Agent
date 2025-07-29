@@ -4,6 +4,8 @@ from fastapi import FastAPI
 from app.api import router
 from app.config import settings
 from app.services.logger import setup_logging, logger
+from app.monitoring import get_health_status, get_metrics_instance
+from app.monitoring.health import get_readiness_status
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -22,3 +24,20 @@ app = FastAPI(
 )
 
 app.include_router(router, prefix="/api")
+
+# Health check endpoints
+@app.get("/health")
+async def health_check():
+    """Health check endpoint untuk load balancer"""
+    return get_health_status()
+
+@app.get("/ready")  
+async def readiness_check():
+    """Readiness check endpoint untuk Kubernetes"""
+    return get_readiness_status()
+
+@app.get("/metrics/basic")
+async def basic_metrics():
+    """Basic metrics endpoint untuk monitoring"""
+    metrics = get_metrics_instance()
+    return metrics.get_stats()
