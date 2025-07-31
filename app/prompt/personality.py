@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import Any, Dict
 
 from app.config import settings
-from app.services.logger import logger
 
 PERSONA_PATH = settings.PERSONALITY_PATH
 

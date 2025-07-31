@@ -2,7 +2,6 @@ from __future__ import annotations
 from typing import Literal
 import re
 
-from app.services.logger import logger
 
 def retrieve_context(
     query: str,

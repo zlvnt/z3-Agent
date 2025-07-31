@@ -9,7 +9,6 @@ if TYPE_CHECKING:
     from langchain_community.vectorstores.faiss import FAISS
 
 from app.config import settings
-from app.services.logger import logger
 
 _DOCS_DIR = Path(settings.DOCS_DIR)
 _VEC_DIR = Path(settings.VECTOR_DIR)

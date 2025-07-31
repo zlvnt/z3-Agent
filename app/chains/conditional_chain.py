@@ -42,7 +42,7 @@ class InstagramConditionalChain(Runnable):
         
         # Step 1: Get memory context first
         memory_start = time.time()
-        memory_context = self._get_memory_context(post_id, comment_id)
+        memory_context = self._get_memory_context(post_id, comment_id, username)
         memory_duration = time.time() - memory_start
         timing_info["memory_time"] = round(memory_duration, 3)
         self._call_callbacks("memory", memory_duration)
@@ -94,10 +94,17 @@ class InstagramConditionalChain(Runnable):
             }
         }
     
-    def _get_memory_context(self, post_id: str, comment_id: str) -> str:
+    def _get_memory_context(self, post_id: str, comment_id: str, username: str) -> str:
         # Get conversation history using centralized history service
         try:
             from app.services.history_service import ConversationHistoryService
+            
+            # Try new username-based method first
+            history = ConversationHistoryService.get_history_by_username(post_id, username)
+            if history and history != "No previous interaction.":
+                return history
+            
+            # Fallback to old comment_id method for backward compatibility
             return ConversationHistoryService.get_history_context(post_id, comment_id)
             
         except Exception as e:

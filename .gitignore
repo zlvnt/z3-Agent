@@ -6,6 +6,7 @@ supervisor-prompt.txt
 model_rf.pkl
 vectorizer.pkl
 conversations.json
+komen.json
 personality.json
 personality1.json
 reply_config.json

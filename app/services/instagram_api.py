@@ -2,7 +2,6 @@ from __future__ import annotations
 import requests
 
 from app.config import settings
-from app.services.logger import logger
 
 INSTAGRAM_API_BASE_URL = settings.INSTAGRAM_API_BASE_URL
 GRAPH_API_VERSION = settings.GRAPH_API_VERSION

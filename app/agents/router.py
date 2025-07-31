@@ -9,7 +9,6 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 print(">> imported app.agent router google_genai")
 
 from app.config import settings
-from app.services.logger import logger
 from app.agents.reply import generate_reply
 from app.agents.rag import retrieve_context
 

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, BackgroundTasks, HTTPException, Header, 
 from app.config import settings
 from app.chains.conditional_chain import process_with_chain
 from app.services.instagram_api import upload_reply     
-from app.services.logger import logger                
+                
 import hmac, hashlib, json
 import asyncio
 from typing import Any
