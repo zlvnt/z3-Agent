@@ -10,6 +10,11 @@ class Settings(BaseSettings):
     INSTAGRAM_ACCOUNT_ID: str = Field(..., alias="INSTAGRAM_ACCOUNT_ID")
     VERIFY_TOKEN: str = Field(..., alias="VERIFY_TOKEN")
     APP_SECRET: str = Field(..., alias="APP_SECRET")
+    
+    # Telegram Bot API
+    TELEGRAM_BOT_TOKEN: Optional[str] = Field(None, alias="TELEGRAM_BOT_TOKEN")
+    TELEGRAM_BOT_USERNAME: str = Field("z3_agent_bot", alias="TELEGRAM_BOT_USERNAME")
+    TELEGRAM_WEBHOOK_SECRET: Optional[str] = Field(None, alias="TELEGRAM_WEBHOOK_SECRET")
 
     # AI Model config
     GEMINI_API_KEY: Optional[str] = Field(None, alias="GEMINI_API_KEY")
