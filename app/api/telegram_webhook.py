@@ -3,7 +3,7 @@ from typing import Dict, Any
 import json
 
 from app.services.telegram_api import send_telegram_message
-from app.chains.conditional_chain import process_with_chain
+from app.chains.telegram_chain import process_telegram_with_memory
 from app.config import settings
 
 router = APIRouter(prefix="/telegram", tags=["telegram"])
@@ -36,13 +36,11 @@ async def process_telegram_message(update: Dict[str, Any]) -> None:
         
         print(f"📨 Processing Telegram message: {text[:50]}... from @{username}")
         
-        # Use existing chain system with channel context
-        # Format IDs as strings for consistency with Instagram
-        reply = await process_with_chain(
-            comment=text,
-            post_id=f"tg_chat_{chat_id}",  # Channel-aware post ID
-            comment_id=f"tg_msg_{message_id}",  # Channel-aware comment ID  
+        # Telegram-specific chain
+        reply = await process_telegram_with_memory(
+            chat_id=str(chat_id),
             username=username,
+            message=text,
             enable_monitoring=True
         )
         
@@ -90,5 +88,3 @@ async def telegram_webhook(request: Request, background_tasks: BackgroundTasks):
     except Exception as e:
         print(f"❌ Telegram webhook error: {e}")
         raise HTTPException(status_code=500, detail="Internal server error")
-
-
