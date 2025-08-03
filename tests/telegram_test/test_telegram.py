@@ -9,7 +9,7 @@ from pathlib import Path
 
 # Add project root to Python path
 import sys
-sys.path.append(str(Path(__file__).parent))
+sys.path.append(str(Path(__file__).parent.parent))
 
 from app.services.telegram_api import get_telegram_api
 from app.chains.conditional_chain import process_with_chain
