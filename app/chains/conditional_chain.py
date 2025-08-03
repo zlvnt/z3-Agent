@@ -30,22 +30,33 @@ class InstagramConditionalChain(Runnable):
     def invoke(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """
         Execute conditional chain with existing functions.
+        Now supports both Instagram (manual memory) and Telegram (LangChain memory).
         """
         comment = inputs["comment"]
         post_id = inputs["post_id"] 
         comment_id = inputs["comment_id"]
         username = inputs["username"]
+        channel = inputs.get("channel", "instagram")  # Default to Instagram for backward compatibility
         
         # Initialize timing info
         timing_info = {}
         total_start = time.time()
         
-        # Step 1: Get memory context first
+        # Step 1: Get memory context (channel-aware)
         memory_start = time.time()
-        memory_context = self._get_memory_context(post_id, comment_id, username)
+        if channel == "telegram":
+            # For Telegram: LangChain handles memory automatically via chat_history input
+            memory_context = inputs.get("chat_history", "")
+            if isinstance(memory_context, list):
+                # Convert LangChain message list to string format
+                memory_context = self._format_langchain_history(memory_context)
+        else:
+            # For Instagram: Use existing manual memory system
+            memory_context = self._get_memory_context(post_id, comment_id, username)
+        
         memory_duration = time.time() - memory_start
         timing_info["memory_time"] = round(memory_duration, 3)
-        self._call_callbacks("memory", memory_duration)
+        self._call_callbacks(f"{channel}_memory", memory_duration)
         
         # Step 2: Router decision
         router_start = time.time()
@@ -111,7 +122,25 @@ class InstagramConditionalChain(Runnable):
             print(f"WARNING: Memory context failed: {e}")
             return ""
     
-    
+    def _format_langchain_history(self, messages: list) -> str:
+        if not messages:
+            return ""
+        
+        try:
+            lines = ["Riwayat Percakapan Sebelumnya:"]
+            
+            for msg in messages:
+                if hasattr(msg, 'type') and hasattr(msg, 'content'):
+                    if msg.type == "human":
+                        lines.append(f"User: {msg.content}")
+                    elif msg.type == "ai":
+                        lines.append(f"z3: {msg.content}")
+            
+            return "\n".join(lines) if len(lines) > 1 else ""
+            
+        except Exception as e:
+            print(f"WARNING: Failed to format LangChain history: {e}")
+            return ""
     
     def _call_callbacks(self, step_name: str, duration: float) -> None:
         for callback in self.callbacks:
