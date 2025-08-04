@@ -1,26 +1,14 @@
-"""
-wrap existing router → rag → reply functions
-with LangChain conditional execution pattern.
-"""
 
 from typing import Dict, Any, List, Callable, Optional
 from langchain_core.runnables import Runnable
 import time
 
-from app.agents.router import supervisor_route
-from app.agents.rag import retrieve_context  
-from app.agents.reply import generate_reply
+from app.core.router import supervisor_route
+from app.core.rag import retrieve_context  
+from app.core.reply import generate_reply
 
 
 class InstagramConditionalChain(Runnable):
-    """
-    Simple conditional chain:
-    Flow:
-    1. Router decision (existing function)
-    2. Conditional RAG (existing function) 
-    3. Reply generation (existing function)
-    4. Memory integration (simple wrapper)
-    """
     
     def __init__(self, memory_window: int = 5, callbacks: Optional[List[Callable]] = None):
         super().__init__()
@@ -28,35 +16,21 @@ class InstagramConditionalChain(Runnable):
         self.callbacks = callbacks or []
     
     def invoke(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Execute conditional chain with existing functions.
-        Now supports both Instagram (manual memory) and Telegram (LangChain memory).
-        """
         comment = inputs["comment"]
         post_id = inputs["post_id"] 
         comment_id = inputs["comment_id"]
         username = inputs["username"]
-        channel = inputs.get("channel", "instagram")  # Default to Instagram for backward compatibility
-        
         # Initialize timing info
         timing_info = {}
         total_start = time.time()
         
-        # Step 1: Get memory context (channel-aware)
+        # Step 1: Get memory context (Instagram-only now)
         memory_start = time.time()
-        if channel == "telegram":
-            # For Telegram: LangChain handles memory automatically via chat_history input
-            memory_context = inputs.get("chat_history", "")
-            if isinstance(memory_context, list):
-                # Convert LangChain message list to string format
-                memory_context = self._format_langchain_history(memory_context)
-        else:
-            # For Instagram: Use existing manual memory system
-            memory_context = self._get_memory_context(post_id, comment_id, username)
+        memory_context = self._get_memory_context(post_id, comment_id, username)
         
         memory_duration = time.time() - memory_start
         timing_info["memory_time"] = round(memory_duration, 3)
-        self._call_callbacks(f"{channel}_memory", memory_duration)
+        self._call_callbacks("instagram_memory", memory_duration)
         
         # Step 2: Router decision
         router_start = time.time()
@@ -120,26 +94,6 @@ class InstagramConditionalChain(Runnable):
             
         except Exception as e:
             print(f"WARNING: Memory context failed: {e}")
-            return ""
-    
-    def _format_langchain_history(self, messages: list) -> str:
-        if not messages:
-            return ""
-        
-        try:
-            lines = ["Riwayat Percakapan Sebelumnya:"]
-            
-            for msg in messages:
-                if hasattr(msg, 'type') and hasattr(msg, 'content'):
-                    if msg.type == "human":
-                        lines.append(f"User: {msg.content}")
-                    elif msg.type == "ai":
-                        lines.append(f"z3: {msg.content}")
-            
-            return "\n".join(lines) if len(lines) > 1 else ""
-            
-        except Exception as e:
-            print(f"WARNING: Failed to format LangChain history: {e}")
             return ""
     
     def _call_callbacks(self, step_name: str, duration: float) -> None:

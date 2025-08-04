@@ -12,9 +12,9 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
-from app.agents.router import handle, supervisor_route
-from app.agents.reply import generate_reply
-from app.agents.rag import retrieve_context
+from app.core.router import handle, supervisor_route
+from app.core.reply import generate_reply
+from app.core.rag import retrieve_context
 
 def test_supervisor_routing():
     """Test supervisor decision making"""
