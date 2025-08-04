@@ -15,6 +15,9 @@ class Settings(BaseSettings):
     TELEGRAM_BOT_TOKEN: Optional[str] = Field(None, alias="TELEGRAM_BOT_TOKEN")
     TELEGRAM_BOT_USERNAME: str = Field("z3_agent_bot", alias="TELEGRAM_BOT_USERNAME")
     TELEGRAM_WEBHOOK_SECRET: Optional[str] = Field(None, alias="TELEGRAM_WEBHOOK_SECRET")
+    
+    # Telegram Memory Configuration
+    TELEGRAM_DB_PATH: str = Field("data/telegram_memory.db", alias="TELEGRAM_DB_PATH")
 
     # AI Model config
     GEMINI_API_KEY: Optional[str] = Field(None, alias="GEMINI_API_KEY")

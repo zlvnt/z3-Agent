@@ -6,9 +6,9 @@ import asyncio
 import time
 
 # Legacy imports (minimal - only for legacy mode)
-from app.agents.router import supervisor_route
-from app.agents.reply import generate_reply
-from app.agents.rag import retrieve_context
+from app.core.router import supervisor_route
+from app.core.reply import generate_reply
+from app.core.rag import retrieve_context
 
 # Chain imports
 from app.chains.conditional_chain import process_with_chain

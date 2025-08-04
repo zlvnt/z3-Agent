@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 print(">> imported app.api root")
 from .webhook import router as webhook_router
-from .telegram_webhook import router as telegram_router
+from app.channels.telegram.webhook import router as telegram_router
 print(">> imported webhook routers")
 
 router = APIRouter()
