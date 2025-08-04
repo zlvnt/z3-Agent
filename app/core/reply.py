@@ -22,7 +22,7 @@ def _get_reply_template():
         return "{persona_intro}\n\n{rules}\n\nUser: \"{comment}\"\n\nInformasi tambahan (bisa internal docs atau web):\n{context}\n\nJawaban Admin AI:"
 
 def _format_optimized_template(comment: str, context: str, history: str = "") -> dict:
-    """Format optimized customer service template following Opus recommendations"""
+    """Format optimized customer service template"""
     try:
         with open("content/reply_config1.json", encoding="utf-8") as f:
             config = json.load(f)
@@ -33,7 +33,7 @@ def _format_optimized_template(comment: str, context: str, history: str = "") ->
         # Format service guidelines array jadi string
         guidelines_text = "Guidelines:\n" + "\n".join([f"- {guideline}" for guideline in service_guidelines])
         
-        # Format context and history according to Opus structure
+        # Format context and history
         formatted_context = context.strip() if context.strip() else "No additional information available."
         formatted_history = history.strip() if history.strip() else "No previous interaction."
         
@@ -81,7 +81,7 @@ def generate_reply(
             from app.services.history_service import ConversationHistoryService
             history_context = ConversationHistoryService.get_optimized_history_for_reply(post_id, comment_id)
         
-        # Use optimized customer service template (Opus recommendations)  
+        # Use optimized customer service template
         template_vars = _format_optimized_template(
             comment=comment,
             context=context or "",

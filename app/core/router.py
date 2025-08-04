@@ -9,8 +9,8 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 print(">> imported app.agent router google_genai")
 
 from app.config import settings
-from app.agents.reply import generate_reply
-from app.agents.rag import retrieve_context
+from app.core.reply import generate_reply
+from app.core.rag import retrieve_context
 
 # Pr
 _SUPERVISOR_PROMPT = ChatPromptTemplate.from_template(
@@ -54,24 +54,7 @@ def handle(
     username: str,
     **kwargs: Any,
 ) -> str:
-    """
-    @deprecated - Use app.chains.process_with_chain instead
-    
-    This function provides manual orchestration of router → rag → reply flow.
-    It is being replaced by the True Chain implementation in app.chains.conditional_chain.
-    
-    Migration path:
-    OLD: from app.agents.router import handle
-    NEW: from app.chains.conditional_chain import process_with_chain
-    
-    The new chain implementation provides:
-    - Better performance (singleton pattern)
-    - Built-in monitoring & timing
-    - Simplified memory management
-    - Same functionality with improved architecture
-    
-    This function will be removed in a future version.
-    """
+
     # For legacy compatibility - get basic history context
     from app.services.history_service import ConversationHistoryService
     try:
