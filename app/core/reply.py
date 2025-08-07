@@ -112,3 +112,36 @@ def generate_reply(
         }
     )
     return reply
+
+
+def generate_telegram_reply(
+    comment: str,
+    context: Optional[str] = "",
+    history_context: Optional[str] = ""
+) -> str:
+    try:
+        # Use same template system as Instagram but without Instagram-specific logic
+        template_vars = _format_optimized_template(
+            comment=comment,
+            context=context or "",
+            history=history_context or ""
+        )
+
+        messages = _REPLY_TEMPLATE.format_messages(**template_vars)
+        
+        # Show final prompt for debugging
+        print(f"🔍 TELEGRAM FINAL PROMPT TO LLM:")
+        print(f"{'='*60}")
+        print(messages[0].content)
+        print(f"{'='*60}")
+        
+        ai_msg = _get_llm().invoke(messages)
+        reply = ai_msg.content.strip()
+        print(f"INFO: Generated Telegram reply")
+        
+    except Exception as e:
+        print(f"ERROR: Telegram reply generation failed - error: {e}")
+        reply = "Sorry, I encountered an issue processing your message. Please try again."
+
+    # NO save_conv() call - Telegram uses its own memory system
+    return reply

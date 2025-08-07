@@ -59,7 +59,7 @@ class TelegramChannel(BaseChannel):
             message_data = self.extract_message_data(raw_data)
             
             # Step 2: Validate and filter message
-            if not self.validate_message_data(message_data):
+            if not message_data or not isinstance(message_data, dict):
                 return "Invalid message data format"
             
             if not self.should_process_message(message_data):
@@ -109,8 +109,8 @@ class TelegramChannel(BaseChannel):
                 return "No reply generated"
                 
         except Exception as e:
-            error_msg = await self.handle_error(e, "process_message")
-            return f"Error: {error_msg}"
+            print(f"❌ Error in process_message: {e}")
+            return f"Error: {str(e)}"
     
     def get_session_id(self, message_data: Dict[str, Any]) -> str:
         """
@@ -274,8 +274,8 @@ class TelegramChannel(BaseChannel):
         Returns:
             bool: True if message should be processed
         """
-        # Call parent validation first
-        if not super().should_process_message(message_data):
+        # Basic validation
+        if not message_data.get('message_text', '').strip():
             return False
         
         # Skip messages from the bot itself
@@ -306,8 +306,7 @@ class TelegramChannel(BaseChannel):
             # Process through core chain
             reply = await process_message_with_core(
                 text=text,
-                history=history,
-                metadata={"session_id": session_id, "channel": "telegram"}
+                history=history
             )
             
             return reply
