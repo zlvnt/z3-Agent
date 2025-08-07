@@ -34,7 +34,7 @@ class InstagramConditionalChain(Runnable):
         
         # Step 2: Router decision
         router_start = time.time()
-        route = supervisor_route(comment, history_context=memory_context)
+        route = supervisor_route(user_input=comment, history_context=memory_context)
         router_duration = time.time() - router_start
         timing_info["router_time"] = round(router_duration, 3)
         self._call_callbacks("router", router_duration)

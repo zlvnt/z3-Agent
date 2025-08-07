@@ -8,7 +8,7 @@ from langchain_core.runnables import Runnable
 
 from app.core.router import supervisor_route
 from app.core.rag import retrieve_context  
-from app.core.reply import generate_reply
+from app.core.reply import generate_reply, generate_telegram_reply
 
 
 class CoreChain(Runnable):
@@ -31,8 +31,8 @@ class CoreChain(Runnable):
         try:
             # Step 1: Route decision
             routing_decision = supervisor_route(
-                comment=text,
-                conversation_history=history
+                user_input=text,
+                history_context=history
             )
             
             # Step 2: Context retrieval (if needed)
@@ -45,10 +45,10 @@ class CoreChain(Runnable):
                 )
             
             # Step 3: Reply generation
-            reply = generate_reply(
+            reply = generate_telegram_reply(
                 comment=text,
                 context=context,
-                conversation_history=history
+                history_context=history
             )
             
             return {
