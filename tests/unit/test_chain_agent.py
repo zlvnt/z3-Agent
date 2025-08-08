@@ -10,8 +10,8 @@ from app.core.router import supervisor_route
 from app.core.reply import generate_reply
 from app.core.rag import retrieve_context
 
-# Chain imports
-from app.chains.conditional_chain import process_with_chain
+# Channel imports
+from app.channels.instagram.chain import process_instagram_message_with_core
 
 async def interactive_chain_chat():
     """NEW: Interactive chat using Chain system"""
@@ -58,11 +58,12 @@ async def interactive_chain_chat():
             try:
                 start_time = time.time()
                 
-                reply = await process_with_chain(
+                reply = await process_instagram_message_with_core(
                     comment=user_input,
                     post_id=session_id,
                     comment_id="interactive_session",  # Same comment_id untuk thread
-                    username="chain_user"
+                    username="chain_user",
+                    history=""  # Instagram doesn't use conversation history currently
                 )
                 
                 processing_time = time.time() - start_time
