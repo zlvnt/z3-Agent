@@ -4,9 +4,7 @@ from typing import Any
 
 from functools import lru_cache
 from langchain_core.prompts import ChatPromptTemplate
-print(">> imported app.agent router")
 from langchain_google_genai import ChatGoogleGenerativeAI
-print(">> imported app.agent router google_genai")
 
 from app.config import settings
 from app.core.reply import generate_reply
@@ -62,9 +60,8 @@ def handle(
     except:
         history_context = ""
     
-    mode = supervisor_route(comment, history_context=history_context)
+    mode = supervisor_route(user_input=comment, history_context=history_context)
     # logger.debug("Route decision", mode=mode)
-
     context = ""
     if mode in {"docs", "web", "all"}:
         context = retrieve_context(comment, mode=mode)
