@@ -27,23 +27,48 @@ def supervisor_route(user_input: str, history_context: str = "") -> str:
     """
     Enhanced supervisor routing with business context and conversation history
     """
-    msg = _SUPERVISOR_PROMPT.format_messages(
-        user_input=user_input,
-        history_context=history_context or "No previous conversation"
-    )
-    decision = _get_llm().invoke(msg).content.strip().lower()
+    success = True
+    routing_mode = "direct"  # default
     
-    # Debug logging untuk monitoring
-    print(f"DEBUG: Supervisor decision: '{decision}' for query: '{user_input[:50]}...'")
+    try:
+        msg = _SUPERVISOR_PROMPT.format_messages(
+            user_input=user_input,
+            history_context=history_context or "No previous conversation"
+        )
+        decision = _get_llm().invoke(msg).content.strip().lower()
+        
+        # Debug logging untuk monitoring
+        print(f"DEBUG: Supervisor decision: '{decision}' for query: '{user_input[:50]}...'")
+        
+        # Map supervisor decision ke internal routing
+        if decision.startswith(("internal_doc", "rag")):
+            routing_mode = "docs"
+        elif decision.startswith(("web_search", "websearch")):
+            routing_mode = "web"
+        elif decision.startswith("all"):
+            routing_mode = "all"
+        else:
+            routing_mode = "direct"
+            
+    except Exception as e:
+        success = False
+        print(f"ERROR: Supervisor routing failed: {e}")
+        routing_mode = "direct"  # fallback
     
-    # Map supervisor decision ke internal routing
-    if decision.startswith(("internal_doc", "rag")):
-        return "docs"
-    if decision.startswith(("web_search", "websearch")):
-        return "web"
-    if decision.startswith("all"):
-        return "all"
-    return "direct"
+    # Record routing metrics
+    _record_routing_decision(routing_mode, success)
+    
+    return routing_mode
+
+
+def _record_routing_decision(routing_mode: str, success: bool = True) -> None:
+    """Record routing decision for metrics"""
+    try:
+        from app.monitoring.enhanced_metrics import get_enhanced_metrics_instance
+        metrics = get_enhanced_metrics_instance()
+        metrics.record_routing_decision(routing_mode, success)
+    except Exception as e:
+        print(f"WARNING: Routing metrics recording failed: {e}")
 
 def handle(
     comment: str,
