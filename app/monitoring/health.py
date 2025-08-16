@@ -74,25 +74,22 @@ def get_readiness_status() -> Dict[str, Any]:
 
 
 def _get_chain_health() -> Dict[str, Any]:
-    # Check channel-specific health (updated for new architecture)
+    # Simple channel health check (early-stage monitoring)
     try:
-        # Check if channel classes are importable
-        from app.channels.instagram.handler import InstagramChannel
-        from app.channels.telegram.handler import TelegramChannel
+        # Just check if we can import the main channel modules
+        import app.channels.instagram.handler
+        import app.channels.telegram.handler
         
         return {
             "status": "ready",
             "architecture": "channel_based",
-            "channels_available": ["instagram", "telegram"],
-            "instagram_channel": "ready",
-            "telegram_channel": "ready"
+            "channels": ["instagram", "telegram"]
         }
         
     except Exception as e:
         return {
             "status": "error",
-            "error": str(e),
-            "note": "Channel architecture health check failed"
+            "error": str(e)
         }
 
 
