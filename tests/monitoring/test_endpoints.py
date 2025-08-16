@@ -88,15 +88,14 @@ async def start_server_and_test():
         print("\n=== Testing webhook with monitoring ===")
         
         # Generate some activity untuk metrics
-        from app.monitoring.callbacks import file_logger_callback
-        from app.monitoring.metrics import get_metrics_instance
+        from app.monitoring.enhanced_metrics import get_metrics_instance
         
         metrics = get_metrics_instance()
         
         # Simulate some requests
         for i in range(5):
-            file_logger_callback(f"test_step_{i%3}", 0.5 + i*0.1)
             metrics.record_request(1.0 + i*0.2, i < 4)  # Last one is error
+            metrics.record_step_duration(f"test_step_{i%3}", 0.5 + i*0.1)
         
         # Check metrics again
         print("\n=== Updated metrics after activity ===")
@@ -127,7 +126,7 @@ def test_endpoints_direct():
     print("🔧 Direct Endpoint Testing (No HTTP Server)\n")
     
     from app.monitoring.health import get_health_status, get_readiness_status
-    from app.monitoring.metrics import get_metrics_instance
+    from app.monitoring.enhanced_metrics import get_metrics_instance
     
     # Test health status
     print("=== Health Status ===")
