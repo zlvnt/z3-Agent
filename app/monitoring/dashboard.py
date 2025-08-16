@@ -211,16 +211,29 @@ def main():
     with col2:
         st.write(f"**Error Threshold:** {alert_status['error_rate_threshold']*100:.0f}%")
         st.write(f"**Response Threshold:** {alert_status['response_time_threshold']:.1f}s")
-        st.write(f"**Cooldown:** {alert_status['alert_cooldown_minutes']:.0f} min")
+        
+        # Check current alert conditions
+        current_alerts = stats.get('alerts', {})
+        if current_alerts.get('high_error_rate'):
+            st.error(f"🚨 High Error Rate: {current_alerts.get('error_rate_value', 0)*100:.1f}%")
+        if current_alerts.get('slow_response'):
+            st.warning(f"⏰ Slow Response: {current_alerts.get('avg_response_time_value', 0):.2f}s")
     
     with col3:
-        st.write(f"**Alerts (24h):** {alert_status['recent_alerts_24h']}")
+        st.write("**Current Status:**")
         
-        if alert_status['last_alerts']:
-            st.write("**Recent Alerts:**")
-            for alert in alert_status['last_alerts'][-3:]:
-                alert_time = datetime.fromisoformat(alert['datetime']).strftime('%H:%M')
-                st.write(f"• {alert_time} - {alert['type']}")
+        # Show current metrics-based alerts
+        if stats.get('alerts'):
+            alert_data = stats['alerts']
+            requests_hour = alert_data.get('requests_last_hour', 0)
+            st.write(f"• Requests last hour: {requests_hour}")
+            
+            if alert_data.get('high_error_rate') or alert_data.get('slow_response'):
+                st.error("⚠️ Active alerts detected!")
+            else:
+                st.success("✅ All systems normal")
+        else:
+            st.info("No alert data available")
     
     # Footer
     st.divider()

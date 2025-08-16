@@ -1,6 +1,6 @@
 """
-Enhanced metrics collection for multi-channel AI agent.
-Extends BasicMetrics with channel-specific tracking, user activity, and RAG effectiveness.
+Comprehensive metrics collection for multi-channel AI agent.
+Includes basic metrics + channel-specific tracking, user activity, and RAG effectiveness.
 """
 
 import time
@@ -8,19 +8,34 @@ from typing import Dict, Any, Optional, Set
 from collections import defaultdict, deque
 from datetime import datetime, timedelta
 
-from .metrics import BasicMetrics
 
-
-class EnhancedMetrics(BasicMetrics):
+class EnhancedMetrics:
     """
     Enhanced metrics for early-stage monitoring (100 queries/day).
     Tracks channel-specific metrics, user activity, and RAG effectiveness.
     """
     
     def __init__(self, window_size: int = 1000):
-        super().__init__(window_size)
+        """Initialize comprehensive metrics collector"""
+        self.window_size = window_size
         
-        # Channel-specific metrics
+        # Basic counters (from BasicMetrics)
+        self.request_count = 0
+        self.error_count = 0
+        self.total_response_time = 0.0
+        
+        # Step-specific metrics (from BasicMetrics)
+        self.step_timings = defaultdict(list)
+        self.step_counts = defaultdict(int)
+        
+        # Recent requests for rate calculation (from BasicMetrics)
+        self.recent_requests = deque(maxlen=window_size)
+        self.recent_errors = deque(maxlen=window_size)
+        
+        # Start time for uptime calculation (from BasicMetrics)
+        self.start_time = time.time()
+        
+        # Channel-specific metrics (enhanced)
         self.channel_requests = defaultdict(int)
         self.channel_errors = defaultdict(int) 
         self.channel_response_times = defaultdict(list)
@@ -45,10 +60,31 @@ class EnhancedMetrics(BasicMetrics):
         # Daily reset tracking
         self.last_daily_reset = datetime.now().date()
     
+    def record_request(self, duration: float, success: bool = True) -> None:
+        """Record a completed request (from BasicMetrics)"""
+        self.request_count += 1
+        self.total_response_time += duration
+        
+        timestamp = time.time()
+        self.recent_requests.append(timestamp)
+        
+        if not success:
+            self.error_count += 1
+            self.recent_errors.append(timestamp)
+    
+    def record_step_duration(self, step_name: str, duration: float) -> None:
+        """Record timing for specific processing step (from BasicMetrics)"""
+        self.step_timings[step_name].append(duration)
+        self.step_counts[step_name] += 1
+        
+        # Keep only recent timings for memory efficiency
+        if len(self.step_timings[step_name]) > self.window_size:
+            self.step_timings[step_name] = self.step_timings[step_name][-self.window_size:]
+
     def record_channel_request(self, channel: str, duration: float, success: bool = True, 
                              username: Optional[str] = None, error_category: Optional[str] = None) -> None:
         """Record a channel-specific request"""
-        # Call parent method for overall metrics
+        # Record basic metrics
         self.record_request(duration, success)
         
         # Channel-specific tracking
@@ -89,6 +125,29 @@ class EnhancedMetrics(BasicMetrics):
         if success:
             self.rag_success_count += 1
     
+    def get_stats(self) -> Dict[str, Any]:
+        """Get basic metrics statistics (from BasicMetrics)"""
+        current_time = time.time()
+        uptime = current_time - self.start_time
+        
+        return {
+            "summary": {
+                "total_requests": self.request_count,
+                "total_errors": self.error_count,
+                "error_rate": self.error_count / max(self.request_count, 1),
+                "avg_response_time": self.total_response_time / max(self.request_count, 1),
+                "uptime_seconds": round(uptime, 2)
+            },
+            "recent_activity": {
+                "requests_last_minute": self._count_recent(self.recent_requests, 60),
+                "requests_last_hour": self._count_recent(self.recent_requests, 3600),
+                "errors_last_minute": self._count_recent(self.recent_errors, 60),
+                "errors_last_hour": self._count_recent(self.recent_errors, 3600)
+            },
+            "step_performance": self._get_step_stats(),
+            "health_status": self._get_health_status()
+        }
+
     def get_enhanced_stats(self) -> Dict[str, Any]:
         """Get comprehensive enhanced statistics"""
         # Get base stats
@@ -174,11 +233,12 @@ class EnhancedMetrics(BasicMetrics):
         hourly_error_rate = recent_errors / max(recent_requests, 1)
         
         # Check average response time in last hour
-        recent_response_times = [
-            duration for duration in list(self.recent_requests)[-100:] 
-            if time.time() - duration < 3600
-        ]
-        avg_recent_response_time = sum(recent_response_times) / max(len(recent_response_times), 1)
+        # Get recent response times for actual durations, not timestamps
+        recent_durations = []
+        for channel in self.channel_response_times.values():
+            recent_durations.extend(channel[-100:])  # Last 100 requests
+        
+        avg_recent_response_time = sum(recent_durations) / max(len(recent_durations), 1)
         
         return {
             "high_error_rate": hourly_error_rate > 0.1,  # >10%
@@ -196,6 +256,38 @@ class EnhancedMetrics(BasicMetrics):
             self.unique_users_today.clear()
             self.repeat_users.clear()
             self.last_daily_reset = current_date
+    
+    def _count_recent(self, deque_data, window_seconds: int) -> int:
+        """Count recent events within time window"""
+        current_time = time.time()
+        cutoff_time = current_time - window_seconds
+        return sum(1 for timestamp in deque_data if timestamp >= cutoff_time)
+    
+    def _get_step_stats(self) -> Dict[str, Any]:
+        """Get step performance statistics"""
+        step_stats = {}
+        for step_name in self.step_timings.keys():
+            timings = self.step_timings[step_name]
+            if timings:
+                step_stats[step_name] = {
+                    "count": self.step_counts[step_name],
+                    "avg_duration": sum(timings) / len(timings),
+                    "min_duration": min(timings),
+                    "max_duration": max(timings)
+                }
+        return step_stats
+    
+    def _get_health_status(self) -> str:
+        """Get basic health status"""
+        error_rate = self.error_count / max(self.request_count, 1)
+        avg_response_time = self.total_response_time / max(self.request_count, 1)
+        
+        if error_rate > 0.1:
+            return "unhealthy"
+        elif error_rate > 0.05 or avg_response_time > 3.0:
+            return "degraded"
+        else:
+            return "healthy"
 
 
 # Global enhanced metrics instance
@@ -215,6 +307,21 @@ def reset_enhanced_metrics() -> None:
     global _enhanced_metrics_instance
     if _enhanced_metrics_instance:
         _enhanced_metrics_instance = EnhancedMetrics()
+
+
+# Backward compatibility aliases for BasicMetrics
+def get_metrics_instance() -> EnhancedMetrics:
+    """Get global metrics instance (backward compatibility)"""
+    return get_enhanced_metrics_instance()
+
+
+def reset_metrics() -> None:
+    """Reset global metrics instance (backward compatibility)"""
+    reset_enhanced_metrics()
+
+
+# Backward compatibility class alias
+BasicMetrics = EnhancedMetrics
 
 
 def test_metrics() -> None:

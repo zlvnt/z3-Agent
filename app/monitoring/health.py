@@ -8,7 +8,7 @@ import os
 from typing import Dict, Any
 from pathlib import Path
 
-from .metrics import get_metrics_instance
+from .enhanced_metrics import get_metrics_instance
 
 
 def get_health_status() -> Dict[str, Any]:
@@ -42,8 +42,8 @@ def get_health_status() -> Dict[str, Any]:
     # Storage health
     health_data["storage"] = _get_storage_health()
     
-    # Log rotation status
-    health_data["log_rotation"] = _get_log_rotation_status()
+    # Log status (simplified - no rotation needed for 100 queries/day)
+    health_data["logs"] = {"status": "simple_logging", "rotation": "not_needed"}
     
     return health_data
 
@@ -74,24 +74,25 @@ def get_readiness_status() -> Dict[str, Any]:
 
 
 def _get_chain_health() -> Dict[str, Any]:
-    # Check chain-specific health
+    # Check channel-specific health (updated for new architecture)
     try:
-        from app.chains.conditional_chain import get_chain
-        
-        chain = get_chain()
-        chain_stats = chain.get_stats()
+        # Check if channel classes are importable
+        from app.channels.instagram.handler import InstagramChannel
+        from app.channels.telegram.handler import TelegramChannel
         
         return {
             "status": "ready",
-            "callbacks_registered": chain_stats["callbacks_count"],
-            "memory_window": chain_stats["memory_window"],
-            "using_conversation_service": chain_stats["using_conversation_service"]
+            "architecture": "channel_based",
+            "channels_available": ["instagram", "telegram"],
+            "instagram_channel": "ready",
+            "telegram_channel": "ready"
         }
         
     except Exception as e:
         return {
             "status": "error",
-            "error": str(e)
+            "error": str(e),
+            "note": "Channel architecture health check failed"
         }
 
 
@@ -132,14 +133,3 @@ def _get_storage_health() -> Dict[str, Any]:
     }
 
 
-def _get_log_rotation_status() -> Dict[str, Any]:
-    # Get log rotation status
-    try:
-        from .rotation import get_log_rotator
-        rotator = get_log_rotator()
-        return rotator.get_status()
-    except Exception as e:
-        return {
-            "status": "error",
-            "error": str(e)
-        }
