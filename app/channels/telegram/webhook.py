@@ -29,8 +29,8 @@ async def process_telegram_update(update: Dict[str, Any]) -> None:
         # Get the Telegram channel instance (singleton)
         channel = get_telegram_channel()
         
-        # Process through the channel (handles all validation and processing)
-        result = await channel.process_message(update)
+        # Process through the channel with metrics tracking
+        result = await channel.process_with_metrics(update)
         
         print(f"📱 Telegram update processed: {result}")
         

@@ -60,8 +60,8 @@ async def process_instagram_comment(comment_data: dict) -> None:
         # Get the Instagram channel instance (singleton)
         channel = get_instagram_channel()
         
-        # Process through the channel (handles all validation and processing)
-        result = await channel.process_message(comment_data)
+        # Process through the channel with metrics tracking
+        result = await channel.process_with_metrics(comment_data)
         
         print(f"📸 Instagram comment processed: {result}")
         
