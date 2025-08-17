@@ -161,38 +161,63 @@ def main():
                 st.write(f"• {user}: {count} requests")
     
     with col2:
-        st.subheader("📋 Recent Activity")
+        st.subheader("📋 Recent User Requests")
         
-        # Show recent log entries
-        log_file = Path("logs/monitoring.jsonl")
-        if log_file.exists():
-            try:
-                with open(log_file, 'r') as f:
-                    lines = f.readlines()
+        # Show recent user request logs
+        try:
+            from app.monitoring.request_logger import get_request_logger
+            logger = get_request_logger()
+            recent_requests = logger.get_recent_requests(10)
+            
+            if recent_requests:
+                # Format for display
+                display_requests = []
+                for req in recent_requests:
+                    display_requests.append({
+                        'Time': req['timestamp'].split('T')[1][:8],
+                        'Channel': req['channel'].title(),
+                        'User': req['username'][:10] + "..." if len(req['username']) > 10 else req['username'],
+                        'Query': req['query'][:30] + "..." if len(req['query']) > 30 else req['query'],
+                        'Duration': f"{req['duration']:.2f}s",
+                        'Status': "✅" if req['success'] else "❌"
+                    })
                 
-                recent_logs = []
-                for line in lines[-10:]:  # Last 10 entries
-                    try:
-                        entry = json.loads(line)
-                        recent_logs.append({
-                            'Time': entry['timestamp'].split('T')[1][:8],
-                            'Step': entry['step'],
-                            'Duration': f"{entry['duration']:.3f}s",
-                            'Severity': entry['severity']
-                        })
-                    except:
-                        continue
+                df_requests = pd.DataFrame(display_requests)
+                st.dataframe(df_requests, use_container_width=True)
+            else:
+                st.info("No recent user requests")
                 
-                if recent_logs:
-                    df_logs = pd.DataFrame(recent_logs)
-                    st.dataframe(df_logs, use_container_width=True)
-                else:
-                    st.info("No recent log entries")
+        except Exception as e:
+            st.error(f"Could not load request logs: {e}")
+            
+            # Fallback to step logs if request logs fail
+            log_file = Path("logs/monitoring.jsonl")
+            if log_file.exists():
+                try:
+                    with open(log_file, 'r') as f:
+                        lines = f.readlines()
                     
-            except Exception as e:
-                st.error(f"Could not read logs: {e}")
-        else:
-            st.info("No log file found")
+                    recent_logs = []
+                    for line in lines[-5:]:  # Last 5 entries
+                        try:
+                            entry = json.loads(line)
+                            if entry.get('step') == 'total':  # Show only total processing times
+                                recent_logs.append({
+                                    'Time': entry['timestamp'].split('T')[1][:8],
+                                    'Channel': entry['channel'].title(),
+                                    'Duration': f"{entry['duration']:.2f}s"
+                                })
+                        except:
+                            continue
+                    
+                    if recent_logs:
+                        df_logs = pd.DataFrame(recent_logs)
+                        st.dataframe(df_logs, use_container_width=True)
+                    else:
+                        st.info("No recent activity logs")
+                        
+                except Exception as e2:
+                    st.error(f"Could not read any logs: {e2}")
     
     st.divider()
     
