@@ -12,6 +12,7 @@ from .enhanced_metrics import (
 )
 from .simple_alerts import get_alerts_instance
 from .health import get_health_status
+from .request_logger import get_request_logger, log_user_request
 
 __all__ = [
     "EnhancedMetrics",
@@ -20,5 +21,7 @@ __all__ = [
     "get_metrics_instance",  # backward compatibility
     "get_alerts_instance",
     "get_health_status",
+    "get_request_logger",
+    "log_user_request",
     "reset_metrics"
 ]
