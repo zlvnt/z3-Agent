@@ -74,3 +74,12 @@ async def metrics_summary():
         },
         "alerts": stats.get("alerts", {})
     }
+
+@app.get("/metrics/requests")
+async def recent_requests():
+    """Get recent user request logs"""
+    from app.monitoring.request_logger import get_request_logger
+    logger = get_request_logger()
+    return {
+        "recent_requests": logger.get_recent_requests(20)
+    }
