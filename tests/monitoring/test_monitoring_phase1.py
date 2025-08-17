@@ -53,7 +53,7 @@ def test_file_logging():
 def test_basic_metrics():
     print("\n=== Testing Basic Metrics ===")
     
-    from app.monitoring.metrics import get_metrics_instance, reset_metrics
+    from app.monitoring.enhanced_metrics import get_metrics_instance, reset_metrics
     
     # Reset for clean test
     reset_metrics()

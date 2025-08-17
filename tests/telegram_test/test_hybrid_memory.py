@@ -10,8 +10,8 @@ from pathlib import Path
 # Add project root to Python path
 sys.path.append(str(Path(__file__).parent.parent.parent))
 
-from app.chains.telegram_chain import get_telegram_chain, process_telegram_with_memory
-from app.chains.conditional_chain import process_with_chain
+from app.channels.telegram.handler import get_telegram_channel
+from app.channels.instagram.chain import process_instagram_message_with_core
 
 
 async def test_telegram_langchain_memory():
