@@ -42,8 +42,7 @@ class InstagramCoreChain(Runnable):
             if routing_decision in ["docs", "web", "all"]:
                 context = retrieve_context(
                     query=comment,
-                    mode=routing_decision,
-                    conversation_history=history
+                    mode=routing_decision
                 )
             
             # Step 3: Reply generation (Instagram-specific)

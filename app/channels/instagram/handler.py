@@ -67,13 +67,14 @@ class InstagramChannel(BaseChannel):
     async def send_reply(self, reply: str, metadata: Dict[str, Any]) -> bool:
         """Send reply to Instagram comment using existing API."""
         try:
-            from app.services.instagram_api import reply_to_comment
+            from app.services.instagram_api import upload_reply
             
             comment_id = metadata.get('comment_id')
             if not comment_id:
                 return False
                 
-            success = await reply_to_comment(comment_id, reply)
+            result = upload_reply(comment_id, reply)
+            success = not ("error" in result)
             return success
             
         except Exception as e:

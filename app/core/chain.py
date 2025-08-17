@@ -40,8 +40,7 @@ class CoreChain(Runnable):
             if routing_decision in ["docs", "web", "all"]:
                 context = retrieve_context(
                     query=text,
-                    mode=routing_decision,
-                    conversation_history=history
+                    mode=routing_decision
                 )
             
             # Step 3: Reply generation
