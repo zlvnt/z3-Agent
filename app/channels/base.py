@@ -44,6 +44,26 @@ class BaseChannel(ABC):
         except Exception as e:
             print(f"WARNING: Metrics recording failed: {e}")
     
+    def log_request(self, raw_data: Dict[str, Any], duration: float, success: bool, error_category: str = None):
+        """Log request for monitoring dashboard"""
+        try:
+            from app.monitoring.request_logger import log_user_request
+            
+            # Extract request details
+            message_data = self.extract_message_data(raw_data)
+            channel_name = self.__class__.__name__.lower().replace('channel', '')
+            username = message_data.get('username') or message_data.get('user_id', 'unknown')
+            query = message_data.get('comment') or message_data.get('text', '')
+            
+            # For routing mode, we'll use a placeholder since it's determined in processing
+            # This will be enhanced later when routing info is available
+            routing_mode = 'unknown'
+            error_message = error_category if not success else None
+            
+            log_user_request(channel_name, username, query, routing_mode, duration, success, error_message)
+        except Exception as e:
+            print(f"WARNING: Request logging failed: {e}")
+    
     async def process_with_metrics(self, raw_data: Dict[str, Any]) -> str:
         """Process message with automatic metrics recording"""
         start_time = time.time()
@@ -68,3 +88,6 @@ class BaseChannel(ABC):
             # Record metrics regardless of success/failure
             duration = time.time() - start_time
             self.record_metrics(duration, success, username, error_category)
+            
+            # Log request for monitoring dashboard
+            self.log_request(raw_data, duration, success, error_category)
