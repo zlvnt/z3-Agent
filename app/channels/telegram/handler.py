@@ -116,12 +116,12 @@ class TelegramChannel(BaseChannel):
         """
         Generate unique session ID for Telegram conversations.
         
-        Session ID formats:
-        - Private chats: 'tg_private_{user_id}'
-        - Group chats: 'tg_group_{chat_id}_{user_id}'
+        Session ID formats (TESTING MODE - using username):
+        - Private chats: 'tg_private_{username}'
+        - Group chats: 'tg_group_{chat_id}_{username}'
         
-        This ensures conversation continuity while separating
-        group contexts from private contexts.
+        NOTE: This is temporary for testing multiple sessions.
+        Production should use user_id for reliability.
         
         Args:
             message_data: Parsed message data
@@ -129,14 +129,23 @@ class TelegramChannel(BaseChannel):
         Returns:
             str: Unique session identifier
         """
-        user_id = message_data['user_id']
+        username = message_data.get('username', 'unknown')
         chat_id = message_data['chat_id']
         is_group = message_data.get('is_group', False)
         
+        # Fallback to user_id if username is empty or 'unknown'
+        if not username or username == 'unknown':
+            user_id = message_data['user_id']
+            if is_group:
+                return f"tg_group_{chat_id}_{user_id}"
+            else:
+                return f"tg_private_{user_id}"
+        
+        # Use username for testing
         if is_group:
-            return f"tg_group_{chat_id}_{user_id}"
+            return f"tg_group_{chat_id}_{username}"
         else:
-            return f"tg_private_{user_id}"
+            return f"tg_private_{username}"
     
     async def send_reply(self, reply: str, metadata: Dict[str, Any]) -> bool:
         """
