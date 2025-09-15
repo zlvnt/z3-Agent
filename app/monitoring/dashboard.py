@@ -5,15 +5,15 @@ Shows real-time metrics without external dependencies.
 
 import streamlit as st
 import pandas as pd
-import time
-import json
-from datetime import datetime, timedelta
-from pathlib import Path
+from datetime import datetime
 import plotly.express as px
-import plotly.graph_objects as go
 
-from .enhanced_metrics import get_enhanced_metrics_instance
-from .simple_alerts import get_alerts_instance
+import sys
+import os
+sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
+
+from app.monitoring.enhanced_metrics import get_enhanced_metrics_instance
+from app.monitoring.simple_alerts import get_alerts_instance
 
 
 def main():
@@ -27,15 +27,37 @@ def main():
     
     st.title("🤖 Instagram AI Agent - Real-Time Monitoring")
     st.markdown("*Simple dashboard for early-stage monitoring (100 queries/day)*")
+    st.write("✅ Dashboard header loaded!")
     
-    # Auto-refresh every 30 seconds
-    if st.button("🔄 Refresh Data") or st.empty():
-        st.rerun()
+    # Get metrics and alerts
+    try:
+        metrics = get_enhanced_metrics_instance()
+        alerts = get_alerts_instance()
+    except Exception as e:
+        st.error(f"❌ Error loading monitoring components: {e}")
+        return
     
-    # Get current metrics
-    metrics = get_enhanced_metrics_instance()
+    # Refresh button (no auto-rerun to prevent infinite loop)
+    if st.button("🔄 Refresh Data"):
+        st.cache_data.clear()
+        st.success("✅ Data refreshed!")
+    
+    # Generate demo data if needed
+    if metrics.request_count == 0:
+        with st.spinner("Generating demo data..."):
+            try:
+                metrics.record_channel_request('instagram', 0.5, True, 'demo_user1')
+                metrics.record_channel_request('telegram', 0.8, True, 'demo_user2') 
+                metrics.record_channel_request('instagram', 1.2, False, 'demo_user3', 'timeout')
+                metrics.record_routing_decision('docs')
+                metrics.record_routing_decision('direct')
+                metrics.record_routing_decision('web')
+                st.success("✅ Demo data generated!")
+            except Exception as e:
+                st.error(f"❌ Error generating data: {e}")
+    
+    # Get stats and alert status
     stats = metrics.get_enhanced_stats()
-    alerts = get_alerts_instance()
     alert_status = alerts.get_alert_status()
     
     # Layout in columns
@@ -97,14 +119,20 @@ def main():
             df_channels = pd.DataFrame(channel_data)
             st.dataframe(df_channels, use_container_width=True)
             
-            # Channel requests pie chart
-            fig_pie = px.pie(
-                df_channels, 
-                values='Requests', 
-                names='Channel',
-                title="Requests by Channel"
-            )
-            st.plotly_chart(fig_pie, use_container_width=True)
+            # Simple channel visualization
+            try:
+                fig_pie = px.pie(
+                    df_channels, 
+                    values='Requests', 
+                    names='Channel',
+                    title="Requests by Channel"
+                )
+                st.plotly_chart(fig_pie, use_container_width=True)
+            except Exception:
+                # Fallback to simple text if plotly fails
+                st.write("**Channel Distribution:**")
+                for _, row in df_channels.iterrows():
+                    st.write(f"• {row['Channel']}: {row['Requests']} requests")
         else:
             st.info("No channel data available yet")
     
@@ -126,14 +154,20 @@ def main():
             ]
             df_routing = pd.DataFrame(routing_data)
             
-            fig_bar = px.bar(
-                df_routing,
-                x='Mode',
-                y='Count',
-                title="Routing Mode Distribution",
-                color='Mode'
-            )
-            st.plotly_chart(fig_bar, use_container_width=True)
+            try:
+                fig_bar = px.bar(
+                    df_routing,
+                    x='Mode',
+                    y='Count',
+                    title="Routing Mode Distribution",
+                    color='Mode'
+                )
+                st.plotly_chart(fig_bar, use_container_width=True)
+            except Exception:
+                # Fallback to simple text if plotly fails
+                st.write("**Routing Distribution:**")
+                for _, row in df_routing.iterrows():
+                    st.write(f"• {row['Mode']}: {row['Count']} queries")
     
     st.divider()
     
@@ -163,61 +197,31 @@ def main():
     with col2:
         st.subheader("📋 Recent User Requests")
         
-        # Show recent user request logs
+        # Show recent activity (simplified)
         try:
-            from app.monitoring.request_logger import get_request_logger
-            logger = get_request_logger()
-            recent_requests = logger.get_recent_requests(10)
+            # Simple activity display based on current metrics
+            recent_activity = {
+                'Instagram': metrics.channel_requests.get('instagram', 0),
+                'Telegram': metrics.channel_requests.get('telegram', 0)
+            }
             
-            if recent_requests:
-                # Format for display
-                display_requests = []
-                for req in recent_requests:
-                    display_requests.append({
-                        'Time': req['timestamp'].split('T')[1][:8],
-                        'Channel': req['channel'].title(),
-                        'User': req['username'][:10] + "..." if len(req['username']) > 10 else req['username'],
-                        'Query': req['query'][:30] + "..." if len(req['query']) > 30 else req['query'],
-                        'Duration': f"{req['duration']:.2f}s",
-                        'Status': "✅" if req['success'] else "❌"
-                    })
-                
-                df_requests = pd.DataFrame(display_requests)
-                st.dataframe(df_requests, use_container_width=True)
+            if any(recent_activity.values()):
+                st.write("**Recent Activity:**")
+                for channel, count in recent_activity.items():
+                    if count > 0:
+                        st.write(f"• {channel}: {count} requests")
+                        
+                # Show routing activity
+                if metrics.routing_decisions:
+                    st.write("**Recent Routing:**")
+                    for route, count in metrics.routing_decisions.items():
+                        if count > 0:
+                            st.write(f"• {route.title()}: {count} queries")
             else:
-                st.info("No recent user requests")
+                st.info("No recent activity")
                 
         except Exception as e:
-            st.error(f"Could not load request logs: {e}")
-            
-            # Fallback to step logs if request logs fail
-            log_file = Path("logs/monitoring.jsonl")
-            if log_file.exists():
-                try:
-                    with open(log_file, 'r') as f:
-                        lines = f.readlines()
-                    
-                    recent_logs = []
-                    for line in lines[-5:]:  # Last 5 entries
-                        try:
-                            entry = json.loads(line)
-                            if entry.get('step') == 'total':  # Show only total processing times
-                                recent_logs.append({
-                                    'Time': entry['timestamp'].split('T')[1][:8],
-                                    'Channel': entry['channel'].title(),
-                                    'Duration': f"{entry['duration']:.2f}s"
-                                })
-                        except:
-                            continue
-                    
-                    if recent_logs:
-                        df_logs = pd.DataFrame(recent_logs)
-                        st.dataframe(df_logs, use_container_width=True)
-                    else:
-                        st.info("No recent activity logs")
-                        
-                except Exception as e2:
-                    st.error(f"Could not read any logs: {e2}")
+            st.error(f"Could not load recent activity: {e}")
     
     st.divider()
     
@@ -286,10 +290,11 @@ def show_simple_metrics():
             st.write(f"**{channel.title()}:** {data['requests']} requests, {data['error_rate']*100:.1f}% errors")
 
 
-if __name__ == "__main__":
-    # Check if running in Streamlit
-    try:
-        main()
-    except Exception as e:
-        print(f"Error running dashboard: {e}")
-        print("Try running with: streamlit run app/monitoring/dashboard.py")
+# Run main function directly (Streamlit auto-executes top-level code)
+try:
+    main()
+except Exception as e:
+    st.error(f"❌ Fatal dashboard error: {e}")
+    st.write("Error details:", str(e))
+    import traceback
+    st.code(traceback.format_exc())
