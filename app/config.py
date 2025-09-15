@@ -16,6 +16,12 @@ class Settings(BaseSettings):
     TELEGRAM_BOT_USERNAME: str = Field("z3_agent_bot", alias="TELEGRAM_BOT_USERNAME")
     TELEGRAM_WEBHOOK_SECRET: Optional[str] = Field(None, alias="TELEGRAM_WEBHOOK_SECRET")
     
+    # Telegram Alert Configuration
+    TELEGRAM_ALERT_CHAT_ID: Optional[str] = Field(None, alias="TELEGRAM_ALERT_CHAT_ID")
+    ALERT_ERROR_RATE_THRESHOLD: float = Field(0.10, alias="ALERT_ERROR_RATE_THRESHOLD")
+    ALERT_RESPONSE_TIME_THRESHOLD: float = Field(5.0, alias="ALERT_RESPONSE_TIME_THRESHOLD")  
+    ALERT_COOLDOWN_MINUTES: int = Field(15, alias="ALERT_COOLDOWN_MINUTES")
+    
     # Telegram Memory Configuration
     TELEGRAM_DB_PATH: str = Field("data/telegram_memory.db", alias="TELEGRAM_DB_PATH")
 
@@ -30,6 +36,10 @@ class Settings(BaseSettings):
 
     # Logging
     LOG_LEVEL: str = Field("INFO", alias="LOG_LEVEL")
+    
+    # Request Logging Configuration
+    REQUEST_LOG_FILE: str = Field("logs/requests.jsonl", alias="REQUEST_LOG_FILE")
+    REQUEST_LOG_MAX_QUERY_LENGTH: int = Field(100, alias="REQUEST_LOG_MAX_QUERY_LENGTH")
 
     # Path config
     CONVERSATIONS_PATH: str = Field("data/conversations.json", alias="CONVERSATIONS_PATH")
