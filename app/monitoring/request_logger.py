@@ -9,12 +9,15 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, Optional
 
+from app.config import settings
+
 class RequestLogger:
     """Simple request logger for early-stage monitoring"""
     
-    def __init__(self, log_file: str = "logs/requests.jsonl"):
-        self.log_file = Path(log_file)
-        self.log_file.parent.mkdir(exist_ok=True)
+    def __init__(self, log_file: str = None):
+        self.log_file = Path(log_file or settings.REQUEST_LOG_FILE)
+        self.log_file.parent.mkdir(parents=True, exist_ok=True)
+        self.max_query_length = settings.REQUEST_LOG_MAX_QUERY_LENGTH
     
     def log_request(
         self, 
@@ -31,7 +34,7 @@ class RequestLogger:
             "timestamp": datetime.now().isoformat(),
             "channel": channel,
             "username": username,
-            "query": query[:100] + "..." if len(query) > 100 else query,  # Truncate long queries
+            "query": query[:self.max_query_length] + "..." if len(query) > self.max_query_length else query,  # Truncate long queries
             "routing_mode": routing_mode,
             "duration": round(duration, 3),
             "success": success,
