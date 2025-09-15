@@ -40,10 +40,14 @@ class EnhancedMetrics:
         self.channel_errors = defaultdict(int) 
         self.channel_response_times = defaultdict(list)
         
-        # User activity tracking
+        # User activity tracking (bounded)
         self.unique_users_today = set()
         self.user_request_counts = defaultdict(int)
         self.repeat_users = set()
+        
+        # Memory management limits
+        self.max_users_tracked = 10000  # Reasonable limit for user tracking
+        self.max_error_categories = 100  # Limit error categories
         
         # RAG effectiveness
         self.routing_decisions = defaultdict(int)  # direct, docs, web, all
@@ -91,6 +95,10 @@ class EnhancedMetrics:
         self.channel_requests[channel] += 1
         self.channel_response_times[channel].append(duration)
         
+        # Bound channel response times to prevent memory growth
+        if len(self.channel_response_times[channel]) > self.window_size:
+            self.channel_response_times[channel] = self.channel_response_times[channel][-self.window_size:]
+        
         timestamp = time.time()
         self.recent_channel_requests[channel].append(timestamp)
         
@@ -100,8 +108,12 @@ class EnhancedMetrics:
             
             if error_category:
                 self.error_categories[error_category] += 1
+                
+                # Prevent unlimited error categories
+                if len(self.error_categories) > self.max_error_categories:
+                    self._cleanup_error_categories()
         
-        # User activity tracking
+        # User activity tracking (with bounds)
         if username:
             if username in self.unique_users_today:
                 self.repeat_users.add(username)
@@ -109,6 +121,10 @@ class EnhancedMetrics:
                 self.unique_users_today.add(username)
             
             self.user_request_counts[username] += 1
+            
+            # Prevent unlimited user growth
+            if len(self.user_request_counts) > self.max_users_tracked:
+                self._cleanup_old_users()
         
         # Keep channel response times manageable
         if len(self.channel_response_times[channel]) > self.window_size:
@@ -256,6 +272,50 @@ class EnhancedMetrics:
             self.unique_users_today.clear()
             self.repeat_users.clear()
             self.last_daily_reset = current_date
+    
+    def _cleanup_old_users(self) -> None:
+        """Remove least active users to prevent memory growth"""
+        if len(self.user_request_counts) <= self.max_users_tracked:
+            return
+        
+        # Keep top 80% most active users
+        target_size = int(self.max_users_tracked * 0.8)
+        
+        # Sort by request count and keep most active users
+        sorted_users = sorted(
+            self.user_request_counts.items(), 
+            key=lambda x: x[1], 
+            reverse=True
+        )
+        
+        # Keep only top users
+        self.user_request_counts = defaultdict(int)
+        for username, count in sorted_users[:target_size]:
+            self.user_request_counts[username] = count
+        
+        print(f"🧹 Cleaned up user tracking: {len(sorted_users)} → {target_size} users")
+    
+    def _cleanup_error_categories(self) -> None:
+        """Remove least common error categories to prevent memory growth"""
+        if len(self.error_categories) <= self.max_error_categories:
+            return
+        
+        # Keep top 80% most common error categories
+        target_size = int(self.max_error_categories * 0.8)
+        
+        # Sort by count and keep most common errors
+        sorted_errors = sorted(
+            self.error_categories.items(), 
+            key=lambda x: x[1], 
+            reverse=True
+        )
+        
+        # Keep only top error categories
+        self.error_categories = defaultdict(int)
+        for error_type, count in sorted_errors[:target_size]:
+            self.error_categories[error_type] = count
+        
+        print(f"🧹 Cleaned up error categories: {len(sorted_errors)} → {target_size} categories")
     
     def _count_recent(self, deque_data, window_seconds: int) -> int:
         """Count recent events within time window"""
