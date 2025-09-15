@@ -8,7 +8,8 @@ import os
 from typing import Dict, Any
 from pathlib import Path
 
-from .enhanced_metrics import get_metrics_instance
+from .enhanced_metrics import get_enhanced_metrics_instance
+from app.config import settings
 
 
 def get_health_status() -> Dict[str, Any]:
@@ -16,8 +17,8 @@ def get_health_status() -> Dict[str, Any]:
     Get comprehensive health status.
     Suitable for Kubernetes health checks.
     """
-    metrics = get_metrics_instance()
-    stats = metrics.get_stats()
+    metrics = get_enhanced_metrics_instance()
+    stats = metrics.get_enhanced_stats()
     
     # Basic system checks
     health_data = {
@@ -25,7 +26,7 @@ def get_health_status() -> Dict[str, Any]:
         "timestamp": time.time(),
         "uptime_seconds": stats["summary"]["uptime_seconds"],
         "version": "2.1",
-        "environment": os.getenv("ENVIRONMENT", "development")
+        "environment": getattr(settings, 'ENVIRONMENT', os.getenv("ENVIRONMENT", "development"))
     }
     
     # Performance metrics
