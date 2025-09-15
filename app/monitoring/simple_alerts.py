@@ -3,10 +3,12 @@ Simple alerting system for early-stage monitoring.
 Sends Telegram notifications when thresholds are breached.
 """
 
-import os
 import asyncio
+import time
 from typing import Dict, Any, Optional
 from datetime import datetime
+
+from app.config import settings
 
 try:
     import aiohttp
@@ -24,25 +26,34 @@ class SimpleAlerts:
     """
     
     def __init__(self):
-        # Alert thresholds
-        self.error_rate_threshold = 0.10  # 10%
-        self.response_time_threshold = 5.0  # 5 seconds
+        # Alert thresholds (from centralized config)
+        self.error_rate_threshold = settings.ALERT_ERROR_RATE_THRESHOLD
+        self.response_time_threshold = settings.ALERT_RESPONSE_TIME_THRESHOLD
         
-        # Telegram configuration
-        self.telegram_bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
-        self.telegram_chat_id = os.getenv("TELEGRAM_ALERT_CHAT_ID")
+        # Alert throttling (prevent spam)
+        self.alert_cooldown_seconds = settings.ALERT_COOLDOWN_MINUTES * 60
+        self.last_alert_time = 0
+        
+        # Telegram configuration (from centralized config)
+        self.telegram_bot_token = settings.TELEGRAM_BOT_TOKEN
+        self.telegram_chat_id = settings.TELEGRAM_ALERT_CHAT_ID
     
     async def check_and_alert(self) -> None:
-        """Check metrics and send alerts if needed"""
+        """Check metrics and send alerts if needed (with throttling)"""
         if not self._can_send_alerts():
             return
             
         metrics = get_enhanced_metrics_instance()
         alert_status = metrics._get_alert_status()
         
-        # Send combined alert if issues detected
+        # Send alert if issues detected and not throttled
         if alert_status["high_error_rate"] or alert_status["slow_response"]:
-            await self._send_alert(alert_status)
+            if self._should_send_alert():
+                await self._send_alert(alert_status)
+                self.last_alert_time = time.time()  # Update throttling
+            else:
+                minutes_ago = (time.time() - self.last_alert_time) / 60
+                print(f"⏸️ Alert throttled (last sent {minutes_ago:.0f}m ago, cooldown: {self.alert_cooldown_seconds/60:.0f}m)")
     
     async def _send_alert(self, alert_status: Dict[str, Any]) -> None:
         """Send single alert for any detected issues"""
@@ -105,12 +116,18 @@ Please check the system! 🔧"""
         """Check if alerts are configured"""
         return bool(self.telegram_bot_token and self.telegram_chat_id and HAS_AIOHTTP)
     
+    def _should_send_alert(self) -> bool:
+        """Check if enough time has passed since last alert (throttling)"""
+        return (time.time() - self.last_alert_time) >= self.alert_cooldown_seconds
+    
     def get_alert_status(self) -> Dict[str, Any]:
-        """Get simple alert configuration status"""
+        """Get alert configuration and throttling status"""
         return {
             "configured": self._can_send_alerts(),
             "error_rate_threshold": self.error_rate_threshold,
-            "response_time_threshold": self.response_time_threshold
+            "response_time_threshold": self.response_time_threshold,
+            "alert_cooldown_minutes": self.alert_cooldown_seconds / 60,
+            "last_alert_minutes_ago": (time.time() - self.last_alert_time) / 60 if self.last_alert_time > 0 else None
         }
 
 
