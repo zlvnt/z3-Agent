@@ -195,7 +195,7 @@ class EnhancedMetrics:
                 avg_response_time = sum(response_times) / len(response_times) if response_times else 0
                 
                 channel_stats[channel] = {
-                    "requests": total_requests,
+                    "requests": total_requests,  
                     "errors": total_errors,
                     "error_rate": round(error_rate, 4),
                     "avg_response_time": round(avg_response_time, 3),
