@@ -110,20 +110,6 @@ Lightweight solution for early-stage systems, integrated metrics collection, imm
 
 ---
 
-## Project Structure
-
-```
-z3-agent/
-├── app/
-│   ├── channels/          # Platform integrations (Instagram, Telegram)
-│   ├── core/              # Shared AI processing (router, RAG, reply)
-│   ├── monitoring/        # Metrics, alerts, dashboard
-│   └── services/          # Utilities and external APIs
-├── content/               # Prompts and bot configuration
-├── docs/                  # Knowledge base for RAG
-└── data/                  # Runtime storage (conversations, vectors)
-```
-
 ### Design Philosophy
 
 **Layer separation**: Clear boundaries between channels, core processing, and services ensure changes in one area don't affect others.
@@ -135,19 +121,6 @@ z3-agent/
 **Data isolation**: Each channel uses appropriate storage for its needs.
 
 **Observability first-class**: Monitoring is integrated from the start, not bolted on later.
-
----
-
-## Design Decisions
-
-### Why Channel Abstraction?
-Adding new messaging platforms shouldn't require rewriting core AI logic. Base interface defines the contract for message processing while each platform shares core components. Result: new platform support requires minimal code with no risk of breaking existing channels.
-
-### Why Local Embeddings?
-Cloud-based embedding APIs add per-request costs that scale with usage. Local embedding models run on your infrastructure with one-time setup. Result: zero ongoing API costs, no rate limits, complete privacy. Trade-off is slightly lower quality vs. commercial APIs, but still effective for most use cases.
-
-### Why Built-in Monitoring?
-Systems often fail silently without proper observability, making debugging difficult. Metrics collection integrated from day one with automatic alerting and visual dashboard. Result: issues detected immediately with context for rapid debugging.
 
 ---
 
