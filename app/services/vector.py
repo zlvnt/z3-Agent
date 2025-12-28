@@ -19,10 +19,20 @@ def _index_exists() -> bool:
 @lru_cache(maxsize=1)
 def _get_embeddings():
     """Get embedding model with smart fallback support"""
+    # Load RAG config for embedding model setting
+    from app.core.rag_config import load_rag_config
+    try:
+        rag_config = load_rag_config("default")
+        model_name = rag_config.embedding_model
+    except Exception as e:
+        print(f"WARNING: Could not load RAG config, using default - error: {e}")
+        # Fallback uses research-validated MPNet model (not legacy MiniLM)
+        # This ensures better embeddings even if config loading fails
+        model_name = 'sentence-transformers/paraphrase-multilingual-mpnet-base-v2'
+
     # Try HuggingFace embeddings first (best for customer service)
     try:
         from langchain_huggingface import HuggingFaceEmbeddings
-        model_name = getattr(settings, 'EMBEDDING_MODEL', 'sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2')
         print(f"INFO: Using HuggingFace embeddings - model: {model_name}")
         return HuggingFaceEmbeddings(
             model_name=model_name,
@@ -31,7 +41,7 @@ def _get_embeddings():
         )
     except Exception as e:
         print(f"WARNING: HuggingFace embeddings failed, falling back to Gemini - error: {e}")
-    
+
     # Fallback to Gemini embeddings
     from langchain_google_genai import GoogleGenerativeAIEmbeddings
     print(f"INFO: Using Gemini embeddings - model: {settings.MODEL_NAME}")
@@ -61,7 +71,18 @@ def get_retriever() -> "FAISS":
         build_index()
         _load_vectordb.cache_clear()
         vectordb = _load_vectordb()
-    return vectordb.as_retriever(search_kwargs={"k": 4})
+
+    # Load retrieval_k from RAG config
+    from app.core.rag_config import load_rag_config
+    try:
+        rag_config = load_rag_config("default")
+        retrieval_k = rag_config.retrieval_k
+    except Exception as e:
+        print(f"WARNING: Could not load RAG config for retrieval_k, using default k=7 - error: {e}")
+        retrieval_k = 7
+
+    print(f"INFO: Retriever configured with k={retrieval_k}")
+    return vectordb.as_retriever(search_kwargs={"k": retrieval_k})
 
 def build_index() -> None:
     print(f"INFO: Building vector index from docs - docs_dir: {_DOCS_DIR}")
@@ -97,7 +118,20 @@ def _load_raw_docs() -> List[Document]:
 
 def _split_docs(docs: List[Document]) -> List[Document]:
     from langchain.text_splitter import RecursiveCharacterTextSplitter
-    splitter = RecursiveCharacterTextSplitter(chunk_size=700, chunk_overlap=100)
+    from app.core.rag_config import load_rag_config
+
+    # Load chunking config
+    try:
+        rag_config = load_rag_config("default")
+        chunk_size = rag_config.chunk_size
+        chunk_overlap = rag_config.chunk_overlap
+    except Exception as e:
+        print(f"WARNING: Could not load RAG config for chunking, using defaults - error: {e}")
+        chunk_size = 500
+        chunk_overlap = 50
+
+    print(f"INFO: Using RecursiveCharacterTextSplitter - chunk_size={chunk_size}, overlap={chunk_overlap}")
+    splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     split_docs = splitter.split_documents(docs)
-    print(f"INFO: Using RecursiveCharacterTextSplitter - chunks: {len(split_docs)}")
+    print(f"INFO: Document splitting complete - total chunks: {len(split_docs)}")
     return split_docs
