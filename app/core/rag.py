@@ -30,7 +30,40 @@ def retrieve_context(
     max_len: int = 2000,
     relevance_threshold: float = 1.0  # BGE score threshold (changed from 0.8)
 ) -> str:
+    """
+    Retrieve context from docs/web with optional query reformulation.
+
+    Flow:
+    1. Query agent analyzes & reformulates query (if enabled)
+    2. Retrieves documents using (possibly reformulated) query
+    3. Reranks documents (if enabled)
+    4. Returns formatted context
+    """
     contexts = []
+    original_query = query  # Keep original for logging
+
+    # Step 0: Query agent analysis & reformulation (if enabled)
+    agent_result = None
+    if mode in {"docs", "all"}:
+        from app.core.rag_config import load_rag_config
+
+        try:
+            rag_config = load_rag_config("default")
+            use_query_agent = getattr(rag_config, 'use_query_agent', False)
+
+            if use_query_agent:
+                from app.core.query_agent import analyze_query
+                agent_result = analyze_query(query)
+
+                # Use reformulated query if needed
+                if agent_result.get("needs_reformulation", False):
+                    query = agent_result["reformulated_query"]
+                    print(f"DEBUG: Query reformulated: '{original_query}' → '{query}'")
+                    print(f"DEBUG: Reformulation reason: {agent_result.get('reformulation_reasoning', 'N/A')}")
+                else:
+                    print(f"DEBUG: Query NOT reformulated (agent decided no need)")
+        except Exception as e:
+            print(f"WARNING: Query agent failed, using original query - error: {e}")
 
     if mode in {"docs", "all"}:
         from app.services.vector import get_retriever
