@@ -41,6 +41,10 @@ class RAGConfig:
         # Adaptive fallback
         self.enable_adaptive_fallback: bool = config_dict.get("enable_adaptive_fallback", True)
 
+        # Query agent settings (agentic reformulation)
+        self.use_query_agent: bool = config_dict.get("use_query_agent", False)
+        self.query_agent_prompt_path: str = config_dict.get("query_agent_prompt_path", "prompts/agent_prompt.txt")
+
     def __repr__(self) -> str:
         return (
             f"RAGConfig(embedding={self.embedding_model}, "
