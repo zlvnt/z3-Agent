@@ -38,3 +38,9 @@ relevance_threshold: 1.0
 # If no chunks pass threshold, use top chunks based on score
 # Prevents returning empty results
 enable_adaptive_fallback: true
+
+# Query Agent Configuration (Agentic Reformulation)
+# Research shows: 78.6% quality (exp_a1) vs 58.7% without reformulation
+# Agent analyzes query and reformulates when needed (65.5% queries reformulated in research)
+use_query_agent: true  # Set to true to enable agentic reformulation
+query_agent_prompt_path: prompts/agent_prompt.txt  # Optional: custom prompt template
