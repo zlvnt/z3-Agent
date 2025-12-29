@@ -253,8 +253,8 @@ class TelegramChannel(BaseChannel):
                 "user_id": str(user_id),
                 "username": username,
                 "message_text": message_text,
-                "chat_id": str(chat_id),
-                "message_id": str(message_id),
+                "chat_id": chat_id,  # Keep as integer for Telegram API
+                "message_id": message_id,  # Keep as integer for Telegram API
                 "timestamp": timestamp,
                 "is_group": is_group,
                 "chat_type": chat_type,
