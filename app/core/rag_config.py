@@ -41,9 +41,20 @@ class RAGConfig:
         # Adaptive fallback
         self.enable_adaptive_fallback: bool = config_dict.get("enable_adaptive_fallback", True)
 
-        # Query agent settings (agentic reformulation)
+        # Query agent settings (DEPRECATED - use unified_processor instead)
         self.use_query_agent: bool = config_dict.get("use_query_agent", False)
         self.query_agent_prompt_path: str = config_dict.get("query_agent_prompt_path", "prompts/agent_prompt.txt")
+
+        # Phase 1: Unified Processor (replaces separate routing + query_agent)
+        self.use_unified_processor: bool = config_dict.get("use_unified_processor", True)
+        self.unified_processor_prompt_path: str = config_dict.get(
+            "unified_processor_prompt_path",
+            "prompts/unified_processor_prompt.txt"
+        )
+
+        # Phase 1: Quality Gate thresholds (reranker score based)
+        self.quality_gate_threshold_good: float = config_dict.get("quality_gate_threshold_good", 0.5)
+        self.quality_gate_threshold_medium: float = config_dict.get("quality_gate_threshold_medium", 0.0)
 
     def __repr__(self) -> str:
         return (
