@@ -208,10 +208,29 @@ class CoreChain(Runnable):
             "Mohon tunggu sebentar, mereka akan segera merespons."
         )
 
-        # TODO: In production, implement actual HITL mechanism:
-        # - Send to Telegram CS group
-        # - Create ticket in ticketing system
-        # - Log for human review queue
+        # =================================================================
+        # TODO: HITL Implementation (Phase 2)
+        # =================================================================
+        # Current: User gets escalation message, but no actual handoff
+        #
+        # To implement:
+        # 1. Telegram CS Group Notification
+        #    - Send alert to CS group with user query + context
+        #    - Include chat_id for CS to respond directly
+        #
+        # 2. Ticketing System Integration
+        #    - Create ticket in Zendesk/Freshdesk/custom system
+        #    - Include escalation_reason, original_query, context
+        #
+        # 3. Database Logging
+        #    - Log to escalation_queue table
+        #    - Track: timestamp, user_id, query, reason, status
+        #    - Dashboard untuk CS melihat pending escalations
+        #
+        # 4. Response Flow
+        #    - Option A: Bot bilang "CS akan menghubungi dalam X menit"
+        #    - Option B: Transfer langsung ke live chat CS
+        # =================================================================
 
         return {
             "reply": escalation_message,
