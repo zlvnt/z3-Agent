@@ -41,9 +41,24 @@ class RAGConfig:
         # Adaptive fallback
         self.enable_adaptive_fallback: bool = config_dict.get("enable_adaptive_fallback", True)
 
-        # Query agent settings (agentic reformulation)
-        self.use_query_agent: bool = config_dict.get("use_query_agent", False)
-        self.query_agent_prompt_path: str = config_dict.get("query_agent_prompt_path", "prompts/agent_prompt.txt")
+        # Unified Processor
+        self.use_unified_processor: bool = config_dict.get("use_unified_processor", True)
+        self.unified_processor_prompt_path: str = config_dict.get(
+            "unified_processor_prompt_path",
+            "prompts/unified_processor_prompt.txt"
+        )
+
+        # Phase 1: Quality Gate thresholds (reranker score based)
+        self.quality_gate_threshold_good: float = config_dict.get("quality_gate_threshold_good", 0.5)
+        self.quality_gate_threshold_medium: float = config_dict.get("quality_gate_threshold_medium", 0.0)
+
+        # LLM Temperature settings
+        self.reply_temperature: float = config_dict.get("reply_temperature", 0.7)
+        self.unified_processor_temperature: float = config_dict.get("unified_processor_temperature", 0.3)
+
+        # Adaptive fallback thresholds
+        self.adaptive_fallback_threshold_high: float = config_dict.get("adaptive_fallback_threshold_high", 0.3)
+        self.adaptive_fallback_threshold_low: float = config_dict.get("adaptive_fallback_threshold_low", 0.2)
 
     def __repr__(self) -> str:
         return (
