@@ -41,11 +41,7 @@ class RAGConfig:
         # Adaptive fallback
         self.enable_adaptive_fallback: bool = config_dict.get("enable_adaptive_fallback", True)
 
-        # Query agent settings (DEPRECATED - use unified_processor instead)
-        self.use_query_agent: bool = config_dict.get("use_query_agent", False)
-        self.query_agent_prompt_path: str = config_dict.get("query_agent_prompt_path", "prompts/agent_prompt.txt")
-
-        # Phase 1: Unified Processor (replaces separate routing + query_agent)
+        # Unified Processor
         self.use_unified_processor: bool = config_dict.get("use_unified_processor", True)
         self.unified_processor_prompt_path: str = config_dict.get(
             "unified_processor_prompt_path",

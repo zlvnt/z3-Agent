@@ -29,8 +29,8 @@ class CoreChain(Runnable):
     LangChain-based core chain for AI processing.
 
     Supports two modes:
-    - Unified Processor (Phase 1): Single agent for routing + reformulation + escalation
-    - Legacy: Separate supervisor_route + query_agent
+    - Unified Processor: Single agent for routing + reformulation + escalation
+    - Legacy: Separate supervisor_route flow
 
     Mode is controlled by use_unified_processor config.
     """
@@ -70,7 +70,6 @@ class CoreChain(Runnable):
             escalate_early = processor_result.get("escalate", False)
             escalation_reason = processor_result.get("escalation_reason", "")
 
-            print(f"DEBUG: Processor result - routing: {routing_decision}, escalate: {escalate_early}")
 
             # Early escalation check (before RAG)
             if escalate_early:
@@ -98,7 +97,6 @@ class CoreChain(Runnable):
                 quality_action = rag_result.action
                 quality_score = rag_result.top_score
 
-                print(f"DEBUG: RAG result - action: {quality_action}, score: {quality_score:.2f}")
 
                 # Quality gate check (post-RAG escalation)
                 if quality_action == "escalate":
@@ -140,7 +138,7 @@ class CoreChain(Runnable):
             }
 
     def _invoke_legacy(self, text: str, history: str) -> Dict[str, Any]:
-        """Process using legacy flow (supervisor_route + query_agent)."""
+        """Process using legacy flow (supervisor_route)."""
         try:
             from app.core.router import supervisor_route
             from app.core.rag import retrieve_context

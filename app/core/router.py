@@ -62,7 +62,6 @@ def supervisor_route(user_input: str, history_context: str = "") -> str:
         )
         decision = _get_llm().invoke(msg).content.strip().lower()
 
-        print(f"DEBUG: Supervisor decision: '{decision}' for query: '{user_input[:50]}...'")
 
         # Map supervisor decision ke internal routing
         if decision.startswith(("internal_doc", "rag")):

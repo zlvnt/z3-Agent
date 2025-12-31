@@ -1,10 +1,10 @@
 """
 RAG (Retrieval-Augmented Generation) Module for z3-Agent
 
-Phase 1 Update:
-- Removed query_agent call (now handled by UnifiedProcessor upstream)
-- Added quality_gate() function for reranker score evaluation
-- Added retrieve_context_with_quality() for full pipeline with quality gate
+Features:
+- quality_gate() for reranker score evaluation
+- retrieve_context_with_quality() for full pipeline with quality gate
+- retrieve_context() for legacy compatibility
 """
 
 from __future__ import annotations
@@ -129,7 +129,6 @@ def retrieve_context_with_quality(
             use_reranker = rag_config.use_reranker if rag_config else True
 
             if use_reranker:
-                print(f"DEBUG: RAG.docs - retrieved {len(docs)} candidates, reranking...")
                 reranker = _get_reranker()
                 reranker_top_k = rag_config.reranker_top_k if rag_config else 3
                 threshold = rag_config.relevance_threshold if rag_config else 1.0
@@ -160,14 +159,11 @@ def retrieve_context_with_quality(
                             filtered_docs = [doc for doc, _ in reranked_with_scores[:1]]
                         else:
                             filtered_docs = [doc for doc, _ in reranked_with_scores[:1]]
-                        print(f"DEBUG: RAG.docs - adaptive fallback activated (top_score={top_score:.2f})")
 
                 final_docs = filtered_docs[:reranker_top_k] if filtered_docs else [doc for doc, _ in reranked_with_scores[:reranker_top_k]]
-                print(f"DEBUG: RAG.docs - reranked: {len(docs)} -> filtered: {len(filtered_docs)} -> final: {len(final_docs)}")
 
             else:
                 # Legacy word overlap filtering
-                print(f"DEBUG: RAG.docs - using word overlap filtering (reranker disabled)")
                 filtered_docs = []
                 query_words = set(query.lower().split())
                 relevance_threshold = rag_config.relevance_threshold if rag_config else 0.8
@@ -182,7 +178,6 @@ def retrieve_context_with_quality(
 
                 final_docs = filtered_docs if filtered_docs else docs
                 top_score = 0.5  # Default medium score for non-reranker
-                print(f"DEBUG: RAG.docs - word overlap: {len(docs)} -> {len(final_docs)}")
 
             # Build context string
             context_docs = "\n".join(
@@ -206,7 +201,6 @@ def retrieve_context_with_quality(
             # Web search doesn't have reranker score, assume medium quality
             if mode == "web":
                 top_score = 0.5
-        print(f"DEBUG: RAG.web - found: {len(snippets)}")
 
     # Combine contexts
     context = "\n\n".join(contexts) if contexts else ""
@@ -216,8 +210,6 @@ def retrieve_context_with_quality(
 
     # Quality gate evaluation
     gate_result = quality_gate(top_score, rag_config)
-
-    print(f"DEBUG: Quality gate - score: {top_score:.2f}, action: {gate_result['action']}")
 
     return QualityGateResult(
         action=gate_result["action"],
@@ -239,10 +231,6 @@ def retrieve_context(
     Legacy function for backward compatibility.
 
     NOTE: For new code, use retrieve_context_with_quality() instead.
-    This function is kept for backward compatibility with existing code.
-
-    Query reformulation is now handled by UnifiedProcessor upstream,
-    so this function no longer calls query_agent.
     """
     result = retrieve_context_with_quality(
         query=query,

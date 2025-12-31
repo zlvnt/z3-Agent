@@ -178,12 +178,6 @@ Query: "halo" | History: ""
             if "escalation_reason" not in result:
                 result["escalation_reason"] = ""
 
-            # Log for debugging
-            print(f"DEBUG: UnifiedProcessor - routing: {result['routing_decision']}, "
-                  f"escalate: {result['escalate']}")
-
-            if result.get("needs_reformulation"):
-                print(f"DEBUG: Query reformulated: '{query}' -> '{result['reformulated_query']}'")
 
             return result
 
