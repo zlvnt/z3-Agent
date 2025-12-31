@@ -16,13 +16,8 @@ def _get_reply_config_path() -> str:
 
 
 def _get_reply_temperature() -> float:
-    """Get reply temperature from RAG config."""
-    try:
-        from app.core.rag_config import load_rag_config
-        config = load_rag_config("default")
-        return config.reply_temperature
-    except Exception:
-        return 0.7  # fallback
+    """Get reply temperature from settings."""
+    return settings.REPLY_TEMPERATURE
 
 
 # Load from professional customer service JSON config

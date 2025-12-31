@@ -29,10 +29,53 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: Optional[str] = Field(None, alias="GEMINI_API_KEY")
     MODEL_NAME: str = Field(..., alias="MODEL_NAME")
     
-    # HuggingFace Embedding Model (local, no API key needed)
-    EMBEDDING_MODEL: str = Field("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2", alias="EMBEDDING_MODEL")
-
     BOT_USERNAME: str = Field("z3_agent", alias="BOT_USERNAME")
+
+    # =========================================================================
+    # RAG Configuration (previously in configs/rag/default.yaml)
+    # =========================================================================
+
+    # Embedding Model
+    EMBEDDING_MODEL: str = Field(
+        "sentence-transformers/paraphrase-multilingual-mpnet-base-v2",
+        alias="EMBEDDING_MODEL"
+    )
+
+    # Document Chunking
+    CHUNK_SIZE: int = Field(500, alias="CHUNK_SIZE")
+    CHUNK_OVERLAP: int = Field(50, alias="CHUNK_OVERLAP")
+
+    # Retrieval
+    RETRIEVAL_K: int = Field(7, alias="RETRIEVAL_K")
+
+    # Reranker (BGE cross-encoder)
+    USE_RERANKER: bool = Field(True, alias="USE_RERANKER")
+    RERANKER_MODEL: str = Field("BAAI/bge-reranker-base", alias="RERANKER_MODEL")
+    RERANKER_TOP_K: int = Field(3, alias="RERANKER_TOP_K")
+    RERANKER_USE_FP16: bool = Field(True, alias="RERANKER_USE_FP16")
+
+    # Relevance Threshold
+    RELEVANCE_THRESHOLD: float = Field(1.0, alias="RELEVANCE_THRESHOLD")
+
+    # Adaptive Fallback
+    ENABLE_ADAPTIVE_FALLBACK: bool = Field(True, alias="ENABLE_ADAPTIVE_FALLBACK")
+    ADAPTIVE_FALLBACK_THRESHOLD_HIGH: float = Field(0.3, alias="ADAPTIVE_FALLBACK_THRESHOLD_HIGH")
+    ADAPTIVE_FALLBACK_THRESHOLD_LOW: float = Field(0.2, alias="ADAPTIVE_FALLBACK_THRESHOLD_LOW")
+
+    # Unified Processor
+    USE_UNIFIED_PROCESSOR: bool = Field(True, alias="USE_UNIFIED_PROCESSOR")
+    UNIFIED_PROCESSOR_PROMPT_PATH: str = Field(
+        "prompts/unified_processor_prompt.txt",
+        alias="UNIFIED_PROCESSOR_PROMPT_PATH"
+    )
+    UNIFIED_PROCESSOR_TEMPERATURE: float = Field(0.3, alias="UNIFIED_PROCESSOR_TEMPERATURE")
+
+    # Quality Gate Thresholds
+    QUALITY_GATE_THRESHOLD_GOOD: float = Field(0.5, alias="QUALITY_GATE_THRESHOLD_GOOD")
+    QUALITY_GATE_THRESHOLD_MEDIUM: float = Field(0.0, alias="QUALITY_GATE_THRESHOLD_MEDIUM")
+
+    # Reply Generation
+    REPLY_TEMPERATURE: float = Field(0.7, alias="REPLY_TEMPERATURE")
 
     # Logging
     LOG_LEVEL: str = Field("INFO", alias="LOG_LEVEL")

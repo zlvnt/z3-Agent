@@ -208,23 +208,12 @@ Query: "halo" | History: ""
 def _get_unified_processor() -> UnifiedProcessor:
     """Get singleton UnifiedProcessor instance."""
     from app.config import settings
-    from app.core.rag_config import load_rag_config
-
-    prompt_path = None
-    temperature = 0.3  # fallback
-
-    try:
-        rag_config = load_rag_config("default")
-        prompt_path = getattr(rag_config, 'unified_processor_prompt_path', None)
-        temperature = getattr(rag_config, 'unified_processor_temperature', 0.3)
-    except Exception as e:
-        print(f"WARNING: Could not load RAG config for processor: {e}")
 
     return UnifiedProcessor(
         api_key=settings.GEMINI_API_KEY,
         model_name=settings.MODEL_NAME,
-        temperature=temperature,
-        prompt_template_path=prompt_path
+        temperature=settings.UNIFIED_PROCESSOR_TEMPERATURE,
+        prompt_template_path=settings.UNIFIED_PROCESSOR_PROMPT_PATH
     )
 
 

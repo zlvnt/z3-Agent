@@ -1,0 +1,48 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Local data (will be created fresh in container)
+data/
+logs/
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# Config files (use env vars in production)
+.env
+.env.*
+configs/
+
+# Misc
+.DS_Store
+*.log
+Thumbs.db

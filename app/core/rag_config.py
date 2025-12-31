@@ -1,64 +1,53 @@
 """
-RAG Configuration Loader for z3-Agent.
+RAG Configuration for z3-Agent.
 
-Loads RAG settings from YAML config files.
-Supports multiple configs for different use cases (default, instagram, telegram, etc.)
-
-Adapted from agentic-rag research domain_config.py
+Loads RAG settings from Pydantic Settings (environment variables).
+All settings can be configured via env vars for production deployment.
 """
 
-from pathlib import Path
-from typing import Dict, Any
 from functools import lru_cache
-import yaml
 
 
 class RAGConfig:
-    """RAG configuration loaded from YAML."""
+    """RAG configuration loaded from Pydantic Settings."""
 
-    def __init__(self, config_dict: Dict[str, Any]):
-        """Initialize from config dictionary."""
+    def __init__(self):
+        """Initialize from Pydantic settings."""
+        from app.config import settings
+
         # Embedding settings
-        self.embedding_model: str = config_dict.get(
-            "embedding_model",
-            "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
-        )
+        self.embedding_model: str = settings.EMBEDDING_MODEL
 
         # Chunking settings
-        self.chunk_size: int = config_dict.get("chunk_size", 500)
-        self.chunk_overlap: int = config_dict.get("chunk_overlap", 50)
+        self.chunk_size: int = settings.CHUNK_SIZE
+        self.chunk_overlap: int = settings.CHUNK_OVERLAP
 
         # Retrieval settings
-        self.retrieval_k: int = config_dict.get("retrieval_k", 7)
-        self.relevance_threshold: float = config_dict.get("relevance_threshold", 1.0)
+        self.retrieval_k: int = settings.RETRIEVAL_K
+        self.relevance_threshold: float = settings.RELEVANCE_THRESHOLD
 
         # Reranker settings
-        self.use_reranker: bool = config_dict.get("use_reranker", True)
-        self.reranker_model: str = config_dict.get("reranker_model", "BAAI/bge-reranker-base")
-        self.reranker_top_k: int = config_dict.get("reranker_top_k", 3)
-        self.reranker_use_fp16: bool = config_dict.get("reranker_use_fp16", True)
+        self.use_reranker: bool = settings.USE_RERANKER
+        self.reranker_model: str = settings.RERANKER_MODEL
+        self.reranker_top_k: int = settings.RERANKER_TOP_K
+        self.reranker_use_fp16: bool = settings.RERANKER_USE_FP16
 
         # Adaptive fallback
-        self.enable_adaptive_fallback: bool = config_dict.get("enable_adaptive_fallback", True)
+        self.enable_adaptive_fallback: bool = settings.ENABLE_ADAPTIVE_FALLBACK
+        self.adaptive_fallback_threshold_high: float = settings.ADAPTIVE_FALLBACK_THRESHOLD_HIGH
+        self.adaptive_fallback_threshold_low: float = settings.ADAPTIVE_FALLBACK_THRESHOLD_LOW
 
         # Unified Processor
-        self.use_unified_processor: bool = config_dict.get("use_unified_processor", True)
-        self.unified_processor_prompt_path: str = config_dict.get(
-            "unified_processor_prompt_path",
-            "prompts/unified_processor_prompt.txt"
-        )
+        self.use_unified_processor: bool = settings.USE_UNIFIED_PROCESSOR
+        self.unified_processor_prompt_path: str = settings.UNIFIED_PROCESSOR_PROMPT_PATH
+        self.unified_processor_temperature: float = settings.UNIFIED_PROCESSOR_TEMPERATURE
 
-        # Phase 1: Quality Gate thresholds (reranker score based)
-        self.quality_gate_threshold_good: float = config_dict.get("quality_gate_threshold_good", 0.5)
-        self.quality_gate_threshold_medium: float = config_dict.get("quality_gate_threshold_medium", 0.0)
+        # Quality Gate thresholds
+        self.quality_gate_threshold_good: float = settings.QUALITY_GATE_THRESHOLD_GOOD
+        self.quality_gate_threshold_medium: float = settings.QUALITY_GATE_THRESHOLD_MEDIUM
 
-        # LLM Temperature settings
-        self.reply_temperature: float = config_dict.get("reply_temperature", 0.7)
-        self.unified_processor_temperature: float = config_dict.get("unified_processor_temperature", 0.3)
-
-        # Adaptive fallback thresholds
-        self.adaptive_fallback_threshold_high: float = config_dict.get("adaptive_fallback_threshold_high", 0.3)
-        self.adaptive_fallback_threshold_low: float = config_dict.get("adaptive_fallback_threshold_low", 0.2)
+        # Reply temperature
+        self.reply_temperature: float = settings.REPLY_TEMPERATURE
 
     def __repr__(self) -> str:
         return (
@@ -68,49 +57,20 @@ class RAGConfig:
         )
 
 
-@lru_cache(maxsize=4)
+@lru_cache(maxsize=1)
 def load_rag_config(config_name: str = "default") -> RAGConfig:
     """
-    Load RAG configuration from YAML file.
+    Load RAG configuration from Pydantic Settings.
 
     Args:
-        config_name: Name of config file (without .yaml extension)
-                    e.g., "default", "instagram", "telegram"
+        config_name: Ignored (kept for backward compatibility).
+                    All settings now come from environment variables.
 
     Returns:
-        RAGConfig object with loaded settings
-
-    Raises:
-        FileNotFoundError: If config file doesn't exist
-        yaml.YAMLError: If config file is invalid
+        RAGConfig object with settings from env vars
     """
-    # Try to find config file in multiple locations
-    possible_paths = [
-        Path("configs/rag") / f"{config_name}.yaml",
-        Path("../configs/rag") / f"{config_name}.yaml",
-        Path(__file__).parent.parent.parent / "configs" / "rag" / f"{config_name}.yaml",
-    ]
-
-    config_path = None
-    for path in possible_paths:
-        if path.exists():
-            config_path = path
-            break
-
-    if config_path is None:
-        raise FileNotFoundError(
-            f"RAG config not found: {config_name}.yaml\n"
-            f"Searched in: {[str(p) for p in possible_paths]}"
-        )
-
-    print(f"Loading RAG config: {config_path}")
-
-    with open(config_path, "r", encoding="utf-8") as f:
-        config_dict = yaml.safe_load(f)
-
-    rag_config = RAGConfig(config_dict)
-    print(f"✓ RAG config loaded: {rag_config}")
-
+    rag_config = RAGConfig()
+    print(f"✓ RAG config loaded from env: {rag_config}")
     return rag_config
 
 
