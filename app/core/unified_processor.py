@@ -29,9 +29,9 @@ class UnifiedProcessor:
     def __init__(
         self,
         api_key: str,
-        model_name: str = "gemini-2.5-flash",
-        prompt_template_path: Optional[str] = None,
-        temperature: float = 0.3
+        model_name: str,
+        temperature: float,
+        prompt_template_path: Optional[str] = None
     ):
         """
         Initialize unified processor.
@@ -39,8 +39,8 @@ class UnifiedProcessor:
         Args:
             api_key: Gemini API key
             model_name: Gemini model name
-            prompt_template_path: Path to prompt template file
             temperature: LLM temperature (0-1, lower = more consistent)
+            prompt_template_path: Path to prompt template file
         """
         self.api_key = api_key
         self.model_name = model_name
@@ -211,18 +211,20 @@ def _get_unified_processor() -> UnifiedProcessor:
     from app.core.rag_config import load_rag_config
 
     prompt_path = None
+    temperature = 0.3  # fallback
 
     try:
         rag_config = load_rag_config("default")
         prompt_path = getattr(rag_config, 'unified_processor_prompt_path', None)
+        temperature = getattr(rag_config, 'unified_processor_temperature', 0.3)
     except Exception as e:
         print(f"WARNING: Could not load RAG config for processor: {e}")
 
     return UnifiedProcessor(
         api_key=settings.GEMINI_API_KEY,
         model_name=settings.MODEL_NAME,
-        prompt_template_path=prompt_path,
-        temperature=0.3
+        temperature=temperature,
+        prompt_template_path=prompt_path
     )
 
 

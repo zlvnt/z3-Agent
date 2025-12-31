@@ -4,27 +4,42 @@ import json
 
 from functools import lru_cache
 from langchain_core.prompts import ChatPromptTemplate
-print(">> imported app.agent reply")
 from langchain_google_genai import ChatGoogleGenerativeAI
-print(">> imported app.agent reply google_genai")
 
 from app.config import settings
 from app.services.conversation import add as save_conv
 
+
+def _get_reply_config_path() -> str:
+    """Get reply config path from settings."""
+    return settings.REPLY_CONFIG_PATH
+
+
+def _get_reply_temperature() -> float:
+    """Get reply temperature from RAG config."""
+    try:
+        from app.core.rag_config import load_rag_config
+        config = load_rag_config("default")
+        return config.reply_temperature
+    except Exception:
+        return 0.7  # fallback
+
+
 # Load from professional customer service JSON config
 def _get_reply_template():
     try:
-        with open("content/reply_config1.json", encoding="utf-8") as f:
+        with open(_get_reply_config_path(), encoding="utf-8") as f:
             config = json.load(f)
         return config.get("reply_template", "{persona_intro}\n\n{rules}\n\nUser: \"{comment}\"\n\nInformasi tambahan (bisa internal docs atau web):\n{context}\n\nJawaban Admin AI:")
     except Exception as e:
-        print(f"WARNING: Failed to load reply config1, using fallback: {e}")
+        print(f"WARNING: Failed to load reply config, using fallback: {e}")
         return "{persona_intro}\n\n{rules}\n\nUser: \"{comment}\"\n\nInformasi tambahan (bisa internal docs atau web):\n{context}\n\nJawaban Admin AI:"
+
 
 def _format_optimized_template(comment: str, context: str, history: str = "") -> dict:
     """Format optimized customer service template"""
     try:
-        with open("content/reply_config1.json", encoding="utf-8") as f:
+        with open(_get_reply_config_path(), encoding="utf-8") as f:
             config = json.load(f)
         
         identity = config.get("identity", {})
@@ -62,7 +77,7 @@ _REPLY_TEMPLATE = ChatPromptTemplate.from_template(_get_reply_template())
 def _get_llm() -> ChatGoogleGenerativeAI:
     return ChatGoogleGenerativeAI(
         model=settings.MODEL_NAME,
-        temperature=0.7,
+        temperature=_get_reply_temperature(),
         google_api_key=settings.GEMINI_API_KEY,
     )
 

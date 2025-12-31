@@ -59,6 +59,9 @@ class Settings(BaseSettings):
     #Persona
     PERSONALITY_PATH: str = Field("content/personality1.json", alias="PERSONALITY_PATH")
 
+    # Reply Configuration
+    REPLY_CONFIG_PATH: str = Field("content/reply_config1.json", alias="REPLY_CONFIG_PATH")
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",

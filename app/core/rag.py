@@ -153,9 +153,12 @@ def retrieve_context_with_quality(
                 # Adaptive fallback
                 if not filtered_docs and rag_config and rag_config.enable_adaptive_fallback:
                     if reranked_with_scores:
-                        if top_score >= 0.3:
+                        threshold_high = getattr(rag_config, 'adaptive_fallback_threshold_high', 0.3)
+                        threshold_low = getattr(rag_config, 'adaptive_fallback_threshold_low', 0.2)
+
+                        if top_score >= threshold_high:
                             filtered_docs = [doc for doc, _ in reranked_with_scores[:2]]
-                        elif top_score >= 0.2:
+                        elif top_score >= threshold_low:
                             filtered_docs = [doc for doc, _ in reranked_with_scores[:1]]
                         else:
                             filtered_docs = [doc for doc, _ in reranked_with_scores[:1]]

@@ -52,6 +52,14 @@ class RAGConfig:
         self.quality_gate_threshold_good: float = config_dict.get("quality_gate_threshold_good", 0.5)
         self.quality_gate_threshold_medium: float = config_dict.get("quality_gate_threshold_medium", 0.0)
 
+        # LLM Temperature settings
+        self.reply_temperature: float = config_dict.get("reply_temperature", 0.7)
+        self.unified_processor_temperature: float = config_dict.get("unified_processor_temperature", 0.3)
+
+        # Adaptive fallback thresholds
+        self.adaptive_fallback_threshold_high: float = config_dict.get("adaptive_fallback_threshold_high", 0.3)
+        self.adaptive_fallback_threshold_low: float = config_dict.get("adaptive_fallback_threshold_low", 0.2)
+
     def __repr__(self) -> str:
         return (
             f"RAGConfig(embedding={self.embedding_model}, "
