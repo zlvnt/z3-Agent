@@ -52,19 +52,24 @@ Singleton pattern for chain instances, lazy loading, async processing, and effic
 ### High-Level Flow
 
 ```
-User Message → Webhook → Channel Handler → Core Chain → Intelligence Layer → Response
+User Message → Webhook → Channel Handler → Core Chain → Response
                                               ↓
                                     ┌─────────┴─────────┐
                                     ↓                   ↓
-                            Router Decision      Conversation Memory
+                          Unified Processor    Conversation Memory
+                          (Route + Reformulate)
                                     ↓
                     ┌───────────────┼───────────────┐
                     ↓               ↓               ↓
               Direct Reply    Doc Retrieval    Web Search
-                    │               │               │
-                    └───────────────┴───────────────┘
                                     ↓
-                            Reply Generation → Send via Channel API
+                              Reranker + Quality Gate
+                                    ↓
+                    ┌───────────────┴───────────────┐
+                    ↓                               ↓
+              Reply Generation              Escalation (if needed)
+                    ↓
+              Send via Channel API
 ```
 
 ### Core Components
@@ -74,9 +79,10 @@ Provides platform abstraction with unified interface. Each channel implements me
 
 #### **Core Processing**
 Shared intelligence layer across all channels:
-- **Router**: Analyzes queries to determine optimal processing strategy
-- **RAG System**: Searches documentation and retrieves relevant context  
-- **Reply Generator**: Combines context and history for natural responses
+- **Unified Processor**: Single LLM call for routing decision, query reformulation, and escalation check
+- **RAG System**: Semantic search with BGE reranker for high-precision context retrieval
+- **Quality Gate**: Evaluates retrieval quality and triggers escalation when confidence is low
+- **Reply Generator**: Combines context and history for natural, grounded responses
 
 Shared core ensures consistent behavior and makes improvements benefit all channels.
 
@@ -95,6 +101,9 @@ Fast inference, native Indonesian and English support, cost-effective for sustai
 
 ### **Embeddings: Local Models (HuggingFace)**
 Zero per-request costs, works offline without external dependencies, privacy-preserving with local processing, multilingual support.
+
+### **Reranker: BGE Cross-Encoder**
+Two-stage retrieval with initial vector search followed by cross-encoder reranking for high-precision results.
 
 ### **Framework: LangChain**
 Standard patterns for chains and memory, seamless integration with vector stores and LLMs, built-in monitoring callbacks, clear path for future enhancements.
@@ -135,13 +144,21 @@ Alerts trigger when error rates exceed 10% or response times exceed 5 seconds, w
 ## Current Status
 
 ### ✅ Working Features
-Core functionality complete: multi-channel support (Instagram, Telegram), intelligent routing, RAG-powered responses, conversation memory, async webhook processing, monitoring with alerts and dashboard, error handling with graceful degradation.
+- Multi-channel support (Instagram, Telegram) with unified interface
+- Unified Processor for routing, reformulation, and escalation in single LLM call
+- RAG with reranker and quality gates for high-precision retrieval
+- Human-in-the-loop escalation when retrieval confidence is low
+- Conversation memory with channel-specific storage
+- Async webhook processing with background tasks
+- Monitoring with Telegram alerts and Streamlit dashboard
+- Configuration via environment variables (Pydantic Settings)
+- Railway deployment ready with optimized Docker image
 
 ### 🚧 In Development
-Webhook security hardening, deployment optimization, load testing under realistic conditions.
+Webhook signature verification, HITL ticketing integration, load testing.
 
 ### 🎯 Future Plans
-Additional channel support (WhatsApp, Discord), advanced analytics (retention, quality scoring), response caching, A/B testing framework, domain-specific embedding fine-tuning.
+Additional channels (WhatsApp, Discord), advanced analytics, response caching, A/B testing, fine-tuned embeddings.
 
 ---
 
