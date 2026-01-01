@@ -107,6 +107,7 @@ class Settings(BaseSettings):
 
     # Reply Configuration
     REPLY_CONFIG_PATH: str = Field("content/reply_config1.json", alias="REPLY_CONFIG_PATH")
+    SOCIAL_PROMPT_PATH: str = Field("templates/social_prompt.txt", alias="SOCIAL_PROMPT_PATH")
 
     model_config = {
         "env_file": ".env",

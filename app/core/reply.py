@@ -157,6 +157,25 @@ def generate_telegram_reply(
     return reply
 
 
+def _load_social_prompt_template() -> str:
+    """Load social prompt template from file."""
+    try:
+        with open(settings.SOCIAL_PROMPT_PATH, encoding="utf-8") as f:
+            return f.read()
+    except Exception as e:
+        print(f"WARNING: Failed to load social prompt, using fallback: {e}")
+        return """Kamu adalah z3, sebuah akun media sosial yang friendly dan santai.
+
+Percakapan sebelumnya:
+{history}
+
+User: "{comment}"
+
+Balas dengan gaya santai dan natural.
+
+Jawaban:"""
+
+
 def generate_social_reply(
     comment: str,
     history_context: Optional[str] = ""
@@ -174,20 +193,17 @@ def generate_social_reply(
         Casual reply string
     """
     try:
-        # Simple casual prompt (TODO: discuss with user for final version)
-        casual_prompt = f"""Kamu adalah z3, sebuah akun media sosial yang friendly dan santai.
+        # Load prompt template from file
+        prompt_template = _load_social_prompt_template()
 
-Percakapan sebelumnya:
-{history_context or "Belum ada percakapan sebelumnya."}
-
-User: "{comment}"
-
-Balas dengan gaya santai dan natural, seperti ngobrol biasa di media sosial. Singkat, friendly, dan to the point.
-
-Jawaban:"""
+        # Format with variables
+        formatted_prompt = prompt_template.format(
+            history=history_context or "Belum ada percakapan sebelumnya.",
+            comment=comment
+        )
 
         messages = ChatPromptTemplate.from_template("{prompt}").format_messages(
-            prompt=casual_prompt
+            prompt=formatted_prompt
         )
 
         # Debug log
