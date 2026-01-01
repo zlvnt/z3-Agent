@@ -66,7 +66,17 @@ def _format_optimized_template(comment: str, context: str, history: str = "") ->
             "service_guidelines": "Guidelines:\n- Provide excellent customer service"
         }
 
-_REPLY_TEMPLATE = ChatPromptTemplate.from_template(_get_reply_template())
+# Reply template - loaded lazily to avoid import-time file errors
+_REPLY_TEMPLATE = None
+
+
+def _get_reply_prompt_template() -> ChatPromptTemplate:
+    """Load reply template lazily (only when needed)."""
+    global _REPLY_TEMPLATE
+    if _REPLY_TEMPLATE is None:
+        _REPLY_TEMPLATE = ChatPromptTemplate.from_template(_get_reply_template())
+    return _REPLY_TEMPLATE
+
 
 @lru_cache(maxsize=1)
 def _get_llm() -> ChatGoogleGenerativeAI:
@@ -98,7 +108,7 @@ def generate_reply(
             history=history_context
         )
 
-        messages = _REPLY_TEMPLATE.format_messages(**template_vars)
+        messages = _get_reply_prompt_template().format_messages(**template_vars)
         
         # Show final prompt before LLM generation
         print(f"🔍 FINAL PROMPT TO LLM:")
@@ -137,7 +147,7 @@ def generate_telegram_reply(
             history=history_context or ""
         )
 
-        messages = _REPLY_TEMPLATE.format_messages(**template_vars)
+        messages = _get_reply_prompt_template().format_messages(**template_vars)
         
         # Show final prompt for debugging
         print(f"🔍 TELEGRAM FINAL PROMPT TO LLM:")

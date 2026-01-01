@@ -20,10 +20,18 @@ from app.core.reply import generate_reply
 from app.core.rag import retrieve_context, retrieve_context_with_quality
 
 
-# Legacy supervisor prompt (kept for backward compatibility)
-_SUPERVISOR_PROMPT = ChatPromptTemplate.from_template(
-    Path(settings.SUPERVISOR_PROMPT_PATH).read_text(encoding="utf-8")
-)
+# Legacy supervisor prompt - loaded lazily to avoid import-time file errors
+_SUPERVISOR_PROMPT = None
+
+
+def _get_supervisor_prompt() -> ChatPromptTemplate:
+    """Load supervisor prompt lazily (only when needed)."""
+    global _SUPERVISOR_PROMPT
+    if _SUPERVISOR_PROMPT is None:
+        _SUPERVISOR_PROMPT = ChatPromptTemplate.from_template(
+            Path(settings.SUPERVISOR_PROMPT_PATH).read_text(encoding="utf-8")
+        )
+    return _SUPERVISOR_PROMPT
 
 
 @lru_cache(maxsize=1)
@@ -56,7 +64,8 @@ def supervisor_route(user_input: str, history_context: str = "") -> str:
     routing_mode = "direct"  # default
 
     try:
-        msg = _SUPERVISOR_PROMPT.format_messages(
+        prompt = _get_supervisor_prompt()
+        msg = prompt.format_messages(
             user_input=user_input,
             history_context=history_context or "No previous conversation"
         )
