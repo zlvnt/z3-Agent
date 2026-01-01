@@ -11,7 +11,8 @@ Phase 1 Update:
 from typing import Dict, Any
 from langchain_core.runnables import Runnable
 
-from app.core.reply import generate_telegram_reply
+from app.core.reply import generate_telegram_reply, generate_social_reply
+from app.config import settings
 
 
 def _is_unified_processor_enabled() -> bool:
@@ -28,18 +29,33 @@ class CoreChain(Runnable):
     """
     LangChain-based core chain for AI processing.
 
-    Supports two modes:
-    - Unified Processor: Single agent for routing + reformulation + escalation
-    - Legacy: Separate supervisor_route flow
+    Supports three agent modes:
+    1. Social Mode (AGENT_MODE=social):
+       - Casual social media replies
+       - No RAG, no escalation, no quality gates
+       - Direct reply generation only
 
-    Mode is controlled by use_unified_processor config.
+    2. CS Mode with Unified Processor (AGENT_MODE=cs + use_unified_processor=true):
+       - Single agent for routing + reformulation + escalation
+       - Full RAG pipeline with quality gates
+
+    3. CS Mode with Legacy (AGENT_MODE=cs + use_unified_processor=false):
+       - Separate supervisor_route flow
+       - Basic RAG without quality gates
+
+    Mode is controlled by AGENT_MODE config (social/cs).
     """
 
     def __init__(self):
         super().__init__()
         self.use_unified = _is_unified_processor_enabled()
-        mode_str = "Unified Processor" if self.use_unified else "Legacy"
-        print(f"CoreChain initialized (Mode: {mode_str})")
+        agent_mode = settings.AGENT_MODE.lower()
+
+        if agent_mode == "social":
+            print(f"CoreChain initialized (Agent Mode: SOCIAL - casual replies only)")
+        else:
+            mode_str = "Unified Processor" if self.use_unified else "Legacy"
+            print(f"CoreChain initialized (Agent Mode: CS - {mode_str})")
 
     def invoke(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         text = inputs.get("text", "")
@@ -52,10 +68,20 @@ class CoreChain(Runnable):
                 "escalated": False
             }
 
-        if self.use_unified:
-            return self._invoke_unified(text, history)
+        # Check agent mode first
+        agent_mode = settings.AGENT_MODE.lower()
+
+        if agent_mode == "social":
+            return self._invoke_social(text, history)
+        elif agent_mode == "cs":
+            # CS mode uses unified or legacy flow
+            if self.use_unified:
+                return self._invoke_unified(text, history)
+            else:
+                return self._invoke_legacy(text, history)
         else:
-            return self._invoke_legacy(text, history)
+            print(f"WARNING: Unknown AGENT_MODE '{agent_mode}', defaulting to social")
+            return self._invoke_social(text, history)
 
     def _invoke_unified(self, text: str, history: str) -> Dict[str, Any]:
         """Process using unified processor (Phase 1 flow)."""
@@ -175,6 +201,41 @@ class CoreChain(Runnable):
             return {
                 "reply": "Sorry, I encountered an issue processing your message. Please try again.",
                 "routing_decision": "error",
+                "escalated": False,
+                "error": str(e)
+            }
+
+    def _invoke_social(self, text: str, history: str) -> Dict[str, Any]:
+        """
+        Process using social mode (casual replies, no RAG).
+
+        Social mode flow:
+        - Skip unified processor (no routing)
+        - Skip RAG retrieval (no docs/web search)
+        - Skip quality gates
+        - Skip escalation
+        - Direct casual reply generation
+        """
+        try:
+            # Generate casual reply (no context, just history)
+            reply = generate_social_reply(
+                comment=text,
+                history_context=history
+            )
+
+            return {
+                "reply": reply,
+                "routing_decision": "social",
+                "mode": "social",
+                "escalated": False
+            }
+
+        except Exception as e:
+            print(f"ERROR: Social mode processing error: {e}")
+            return {
+                "reply": "Halo! Maaf ada sedikit gangguan. Coba lagi ya!",
+                "routing_decision": "error",
+                "mode": "social",
                 "escalated": False,
                 "error": str(e)
             }

@@ -155,3 +155,53 @@ def generate_telegram_reply(
 
     # NO save_conv() call - Telegram uses its own memory system
     return reply
+
+
+def generate_social_reply(
+    comment: str,
+    history_context: Optional[str] = ""
+) -> str:
+    """
+    Generate casual social media reply (no RAG, no CS guidelines).
+
+    For Social Mode - relaxed conversation, no knowledge base lookup.
+
+    Args:
+        comment: User's message
+        history_context: Conversation history for context
+
+    Returns:
+        Casual reply string
+    """
+    try:
+        # Simple casual prompt (TODO: discuss with user for final version)
+        casual_prompt = f"""Kamu adalah z3, sebuah akun media sosial yang friendly dan santai.
+
+Percakapan sebelumnya:
+{history_context or "Belum ada percakapan sebelumnya."}
+
+User: "{comment}"
+
+Balas dengan gaya santai dan natural, seperti ngobrol biasa di media sosial. Singkat, friendly, dan to the point.
+
+Jawaban:"""
+
+        messages = ChatPromptTemplate.from_template("{prompt}").format_messages(
+            prompt=casual_prompt
+        )
+
+        # Debug log
+        print(f"🔍 SOCIAL MODE PROMPT:")
+        print(f"{'='*60}")
+        print(messages[0].content)
+        print(f"{'='*60}")
+
+        ai_msg = _get_llm().invoke(messages)
+        reply = ai_msg.content.strip()
+        print(f"INFO: Generated social reply (no RAG)")
+
+    except Exception as e:
+        print(f"ERROR: Social reply generation failed - error: {e}")
+        reply = "Halo! Ada yang bisa aku bantu?"
+
+    return reply

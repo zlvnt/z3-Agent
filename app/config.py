@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     
     BOT_USERNAME: str = Field("z3_agent", alias="BOT_USERNAME")
 
+    # Agent Mode (social = casual replies only, cs = full CS with RAG/escalation)
+    AGENT_MODE: str = Field("social", alias="AGENT_MODE")
+
     # =========================================================================
     # RAG Configuration (previously in configs/rag/default.yaml)
     # =========================================================================
