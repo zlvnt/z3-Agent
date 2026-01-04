@@ -81,9 +81,12 @@ class InstagramDMClient:
             }
 
             # Use httpx client for request
+            # Instagram Messaging API uses Facebook Page ID (connected to Instagram)
+            page_id = settings.PAGE_ID
+
             async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    f"{self.base_url}/me/messages",
+                    f"{self.base_url}/{page_id}/messages",
                     json=payload,
                     params=params,
                     timeout=30.0

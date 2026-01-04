@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     # Instagram Graph API
     INSTAGRAM_ACCESS_TOKEN: str = Field(..., alias="INSTAGRAM_ACCESS_TOKEN")
     INSTAGRAM_ACCOUNT_ID: str = Field(..., alias="INSTAGRAM_ACCOUNT_ID")
+    PAGE_ID: str = Field(..., alias="PAGE_ID")  # Facebook Page ID for Instagram DM
     VERIFY_TOKEN: str = Field(..., alias="VERIFY_TOKEN")
     APP_SECRET: str = Field(..., alias="APP_SECRET")
     
@@ -95,7 +96,7 @@ class Settings(BaseSettings):
     SUPERVISOR_PROMPT_PATH: str = Field("content/supervisor-prompt.txt", alias="SUPERVISOR_PROMPT_PATH")
 
     # Graph API Version
-    GRAPH_API_VERSION: str = Field("18.0", alias="GRAPH_API_VERSION")
+    GRAPH_API_VERSION: str = Field("24.0", alias="GRAPH_API_VERSION")
     INSTAGRAM_API_BASE_URL: str = Field("https://graph.facebook.com", alias="INSTAGRAM_API_BASE_URL")
 
     #vectorfile
