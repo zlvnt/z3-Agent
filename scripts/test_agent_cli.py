@@ -16,7 +16,7 @@ from typing import Literal
 from datetime import datetime
 
 # Import z3-Agent core components
-from app.core.router import supervisor_route
+from app.core.router import classify_query
 from app.core.rag import retrieve_context
 from app.core.reply import generate_telegram_reply, generate_reply
 
@@ -73,8 +73,8 @@ class AgentTester:
         chat_id = f"chat_{len(self.conversation_history)}"
 
         # Step 1: Routing Decision
-        print(f"{Colors.BLUE}Step 1: Supervisor Routing{Colors.END}")
-        routing_mode = supervisor_route(user_input=user_message, history_context="")
+        print(f"{Colors.BLUE}Step 1: Query Classification{Colors.END}")
+        routing_mode = classify_query(user_input=user_message, history_context="")
         print(f"  → Routing Mode: {Colors.BOLD}{routing_mode.upper()}{Colors.END}")
         self.print_debug("Routing Decision", f"Mode: {routing_mode}")
 

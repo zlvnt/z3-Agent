@@ -1,10 +1,10 @@
 """
 Router module for z3-Agent
 
-Phase 1 Update:
-- Added unified processor support (when use_unified_processor=true)
-- Legacy supervisor_route kept for backward compatibility
-- handle() function updated to use new flow when enabled
+Provides query classification and routing functionality:
+- classify_query(): Classify user queries to determine routing strategy
+- Unified processor support (when use_unified_processor=true)
+- handle() function for backward compatibility
 """
 
 from __future__ import annotations
@@ -53,12 +53,22 @@ def _is_unified_processor_enabled() -> bool:
         return False
 
 
-def supervisor_route(user_input: str, history_context: str = "") -> str:
+def classify_query(user_input: str, history_context: str = "") -> str:
     """
-    Legacy supervisor routing with business context and conversation history.
+    Classify user query to determine routing strategy.
+
+    Analyzes user input and conversation history to classify the query type
+    and determine the appropriate routing mode (direct/docs/web/all).
 
     NOTE: When use_unified_processor=true, this function is bypassed.
     Use process_with_unified() instead for the full unified flow.
+
+    Args:
+        user_input: The user's current message/query
+        history_context: Formatted conversation history for context
+
+    Returns:
+        str: Routing mode - "direct", "docs", "web", or "all"
     """
     success = True
     routing_mode = "direct"  # default
@@ -72,7 +82,7 @@ def supervisor_route(user_input: str, history_context: str = "") -> str:
         decision = _get_llm().invoke(msg).content.strip().lower()
 
 
-        # Map supervisor decision ke internal routing
+        # Map LLM classification decision to internal routing mode
         if decision.startswith(("internal_doc", "rag")):
             routing_mode = "docs"
         elif decision.startswith(("web_search", "websearch")):
@@ -247,7 +257,7 @@ def _handle_legacy(
 ) -> str:
     """Handle using legacy flow (backward compatibility)."""
 
-    mode = supervisor_route(user_input=comment, history_context=history_context)
+    mode = classify_query(user_input=comment, history_context=history_context)
 
     context = ""
     if mode in {"docs", "web", "all"}:

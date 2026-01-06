@@ -71,11 +71,12 @@ class TelegramMemory:
                 return ""
             
             # Format last 10 messages for AI context
+            # Using "User"/"Bot" for token efficiency (shorter than "Human"/"Assistant")
             formatted_history = []
             for msg in messages[-10:]:
-                role = "Human" if msg.type == "human" else "Assistant"
+                role = "User" if msg.type == "human" else "Bot"
                 formatted_history.append(f"{role}: {msg.content}")
-            
+
             return "\n".join(formatted_history)
             
         except Exception as e:

@@ -5,7 +5,7 @@ Instagram core chain - copy of TelegramCoreChain adapted for Instagram parameter
 from typing import Dict, Any
 from langchain_core.runnables import Runnable
 
-from app.core.router import supervisor_route
+from app.core.router import classify_query
 from app.core.rag import retrieve_context  
 from app.core.reply import generate_reply
 
@@ -32,7 +32,7 @@ class InstagramCoreChain(Runnable):
         
         try:
             # Step 1: Route decision
-            routing_decision = supervisor_route(
+            routing_decision = classify_query(
                 user_input=comment,
                 history_context=history
             )
