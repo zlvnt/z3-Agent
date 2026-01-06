@@ -1,9 +1,9 @@
 """
 Core Chain for z3-Agent
 
-Phase 1 Update:
-- Uses UnifiedProcessor when use_unified_processor=true
-- Falls back to legacy supervisor_route when disabled
+Simplified architecture:
+- Social Mode: Casual replies only (no RAG)
+- CS Mode: Unified Processor with quality gates and escalation
 - Handles quality gate results (proceed/flag/escalate)
 - Supports HITL escalation flow
 """
@@ -15,47 +15,32 @@ from app.core.reply import generate_telegram_reply, generate_social_reply
 from app.config import settings
 
 
-def _is_unified_processor_enabled() -> bool:
-    """Check if unified processor is enabled in config."""
-    try:
-        from app.core.rag_config import load_rag_config
-        config = load_rag_config("default")
-        return getattr(config, 'use_unified_processor', False)
-    except Exception:
-        return False
-
-
 class CoreChain(Runnable):
     """
     LangChain-based core chain for AI processing.
 
-    Supports three agent modes:
+    Supports two agent modes:
     1. Social Mode (AGENT_MODE=social):
        - Casual social media replies
        - No RAG, no escalation, no quality gates
        - Direct reply generation only
 
-    2. CS Mode with Unified Processor (AGENT_MODE=cs + use_unified_processor=true):
-       - Single agent for routing + reformulation + escalation
+    2. CS Mode (AGENT_MODE=cs):
+       - Unified Processor for routing + reformulation + escalation
        - Full RAG pipeline with quality gates
-
-    3. CS Mode with Legacy (AGENT_MODE=cs + use_unified_processor=false):
-       - Separate supervisor_route flow
-       - Basic RAG without quality gates
+       - HITL escalation support
 
     Mode is controlled by AGENT_MODE config (social/cs).
     """
 
     def __init__(self):
         super().__init__()
-        self.use_unified = _is_unified_processor_enabled()
         agent_mode = settings.AGENT_MODE.lower()
 
         if agent_mode == "social":
             print(f"CoreChain initialized (Agent Mode: SOCIAL - casual replies only)")
         else:
-            mode_str = "Unified Processor" if self.use_unified else "Legacy"
-            print(f"CoreChain initialized (Agent Mode: CS - {mode_str})")
+            print(f"CoreChain initialized (Agent Mode: CS - Unified Processor)")
 
     def invoke(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         text = inputs.get("text", "")
@@ -68,17 +53,13 @@ class CoreChain(Runnable):
                 "escalated": False
             }
 
-        # Check agent mode first
+        # Check agent mode
         agent_mode = settings.AGENT_MODE.lower()
 
         if agent_mode == "social":
             return self._invoke_social(text, history)
         elif agent_mode == "cs":
-            # CS mode uses unified or legacy flow
-            if self.use_unified:
-                return self._invoke_unified(text, history)
-            else:
-                return self._invoke_legacy(text, history)
+            return self._invoke_unified(text, history)
         else:
             print(f"WARNING: Unknown AGENT_MODE '{agent_mode}', defaulting to social")
             return self._invoke_social(text, history)
@@ -158,48 +139,6 @@ class CoreChain(Runnable):
             print(f"ERROR: Unified processing error: {e}")
             return {
                 "reply": "Mohon maaf, terjadi kendala teknis. Silakan coba lagi atau hubungi CS kami.",
-                "routing_decision": "error",
-                "escalated": False,
-                "error": str(e)
-            }
-
-    def _invoke_legacy(self, text: str, history: str) -> Dict[str, Any]:
-        """Process using legacy flow (supervisor_route)."""
-        try:
-            from app.core.router import supervisor_route
-            from app.core.rag import retrieve_context
-
-            # Step 1: Route decision
-            routing_decision = supervisor_route(
-                user_input=text,
-                history_context=history
-            )
-
-            # Step 2: Context retrieval (if needed)
-            context = ""
-            if routing_decision in ["docs", "web", "all"]:
-                context = retrieve_context(
-                    query=text,
-                    mode=routing_decision
-                )
-
-            # Step 3: Reply generation
-            reply = generate_telegram_reply(
-                comment=text,
-                context=context,
-                history_context=history
-            )
-
-            return {
-                "reply": reply,
-                "routing_decision": routing_decision,
-                "escalated": False
-            }
-
-        except Exception as e:
-            print(f"ERROR: Legacy processing error: {e}")
-            return {
-                "reply": "Sorry, I encountered an issue processing your message. Please try again.",
                 "routing_decision": "error",
                 "escalated": False,
                 "error": str(e)
