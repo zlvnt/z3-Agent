@@ -1,8 +1,9 @@
 """
-Simplified Telegram memory management with LangChain integration.
+Telegram memory management with PostgreSQL and SQLite support.
 
-This module provides basic conversation memory for Telegram channels using
-LangChain's SQLChatMessageHistory with minimal configuration.
+This module provides conversation memory for Telegram channels using
+LangChain's SQLChatMessageHistory with support for both PostgreSQL (production)
+and SQLite (development).
 """
 
 from typing import Optional
@@ -16,41 +17,60 @@ from app.config import settings
 
 class TelegramMemory:
     """
-    Simple Telegram memory manager using LangChain SQLChatMessageHistory.
-    
+    Telegram memory manager with PostgreSQL and SQLite support.
+
     Features:
-    - Basic LangChain SQLChatMessageHistory integration
+    - Auto-detect database type from DATABASE_URL
+    - PostgreSQL for production (Railway addon)
+    - SQLite fallback for local development
     - Simple conversation storage and retrieval
-    - Minimal configuration for lightweight usage
     """
-    
-    def __init__(self, db_path: Optional[str] = None):
+
+    def __init__(self, db_path: Optional[str] = None, database_url: Optional[str] = None):
         """
-        Initialize simple Telegram memory manager.
-        
+        Initialize Telegram memory manager.
+
+        Supports both PostgreSQL (via DATABASE_URL) and SQLite (via db_path).
+        Priority: database_url > DATABASE_URL env > db_path > default SQLite
+
         Args:
-            db_path: Path to SQLite database file
+            db_path: Path to SQLite database file (for local dev)
+            database_url: PostgreSQL connection string (for production)
         """
-        self.db_path = db_path or getattr(settings, 'TELEGRAM_DB_PATH', 'data/telegram_memory.db')
-        
-        # Ensure database directory exists
-        Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
-        
-        print(f"🧠 TelegramMemory initialized: {self.db_path}")
+        # Check for PostgreSQL connection string
+        self.database_url = database_url or getattr(settings, 'DATABASE_URL', None)
+
+        if self.database_url:
+            # PostgreSQL mode
+            self.connection_string = self.database_url
+            self.db_type = "postgresql"
+            print(f"🧠 TelegramMemory initialized: PostgreSQL")
+        else:
+            # SQLite mode (fallback for local dev)
+            self.db_path = db_path or getattr(settings, 'TELEGRAM_DB_PATH', 'data/telegram_memory.db')
+
+            # Ensure database directory exists for SQLite
+            Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
+
+            self.connection_string = f"sqlite:///{self.db_path}"
+            self.db_type = "sqlite"
+            print(f"🧠 TelegramMemory initialized: SQLite ({self.db_path})")
     
     def _get_session_history(self, session_id: str) -> BaseChatMessageHistory:
         """
         Get LangChain message history for a session.
-        
+
+        Works with both PostgreSQL and SQLite based on initialization.
+
         Args:
             session_id: Unique session identifier
-            
+
         Returns:
             BaseChatMessageHistory: LangChain message history instance
         """
         return SQLChatMessageHistory(
             session_id=session_id,
-            connection_string=f"sqlite:///{self.db_path}"
+            connection_string=self.connection_string
         )
     
     def get_history(self, session_id: str) -> str:

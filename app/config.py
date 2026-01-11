@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     
     # Telegram Memory Configuration
     TELEGRAM_DB_PATH: str = Field("data/telegram_memory.db", alias="TELEGRAM_DB_PATH")
+    DATABASE_URL: Optional[str] = Field(None, alias="DATABASE_URL")  # PostgreSQL connection string (optional, defaults to SQLite)
 
     # AI Model config
     GEMINI_API_KEY: Optional[str] = Field(None, alias="GEMINI_API_KEY")
