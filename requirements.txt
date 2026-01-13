@@ -26,6 +26,9 @@ requests==2.32.3
 aiohttp==3.11.18
 duckduckgo-search  # Web search functionality
 
+# Database Drivers
+psycopg2-binary==2.9.10  # PostgreSQL driver for LangChain memory
+
 # Monitoring & Dashboard (Optional)
 streamlit  # Real-time monitoring dashboard
 pandas  # Dashboard data processing
