@@ -70,7 +70,7 @@ class TelegramMemory:
         """
         return SQLChatMessageHistory(
             session_id=session_id,
-            connection_string=self.connection_string
+            connection=self.connection_string
         )
     
     def get_history(self, session_id: str) -> str:
