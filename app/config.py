@@ -5,12 +5,12 @@ from pydantic import Field
 
 
 class Settings(BaseSettings):
-    # Instagram Graph API
-    INSTAGRAM_ACCESS_TOKEN: str = Field(..., alias="INSTAGRAM_ACCESS_TOKEN")
-    INSTAGRAM_ACCOUNT_ID: str = Field(..., alias="INSTAGRAM_ACCOUNT_ID")
-    PAGE_ID: str = Field(..., alias="PAGE_ID")  # Facebook Page ID for Instagram DM
-    VERIFY_TOKEN: str = Field(..., alias="VERIFY_TOKEN")
-    APP_SECRET: str = Field(..., alias="APP_SECRET")
+    # Instagram Graph API (Optional - channel disabled, focusing on Telegram)
+    INSTAGRAM_ACCESS_TOKEN: Optional[str] = Field(None, alias="INSTAGRAM_ACCESS_TOKEN")
+    INSTAGRAM_ACCOUNT_ID: Optional[str] = Field(None, alias="INSTAGRAM_ACCOUNT_ID")
+    PAGE_ID: Optional[str] = Field(None, alias="PAGE_ID")  # Facebook Page ID for Instagram DM
+    VERIFY_TOKEN: Optional[str] = Field(None, alias="VERIFY_TOKEN")
+    APP_SECRET: Optional[str] = Field(None, alias="APP_SECRET")
     
     # Telegram Bot API
     TELEGRAM_BOT_TOKEN: Optional[str] = Field(None, alias="TELEGRAM_BOT_TOKEN")
