@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     DATABASE_URL: Optional[str] = Field(None, alias="DATABASE_URL")  # PostgreSQL connection string (optional, defaults to SQLite)
 
     # AI Model config
-    GEMINI_API_KEY: Optional[str] = Field(None, alias="GEMINI_API_KEY")
+    GEMINI_API_KEY: str = Field(..., alias="GEMINI_API_KEY")
     MODEL_NAME: str = Field(..., alias="MODEL_NAME")
     
     BOT_USERNAME: str = Field("z3_agent", alias="BOT_USERNAME")
