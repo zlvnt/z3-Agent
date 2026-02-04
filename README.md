@@ -11,17 +11,20 @@
 
 ## Overview
 
-**z3-Agent** is a multi-channel AI customer service agent that handles conversations across Instagram and Telegram. It uses intelligent routing to deliver context-aware responses by combining large language models, internal documentation search, and real-time web information.
+**z3-Agent** is an AI-powered customer service and social media agent built on FastAPI and Gemini. Currently deployed on Telegram, with architecture ready for additional channels.
 
-The system analyzes each incoming message through a supervisor agent that determines the optimal response strategy:
-- **Direct reply** for greetings and casual conversation
-- **Documentation search** for technical questions using semantic retrieval
-- **Web search** for current events and recent information
-- **Combined approach** for complex, multi-faceted queries
+The system supports two operational modes:
+- **Social Mode**: Casual social media replies without RAG
+- **CS Mode**: Full customer service with intelligent routing, RAG retrieval, quality gates, and human escalation
 
-Built with a clean channel-based architecture, z3-Agent makes it straightforward to add support for additional messaging platforms. The system includes comprehensive monitoring, alerting, and observability features.
+In CS mode, a Unified Processor analyzes each message in a single LLM call to determine:
+- **Routing decision**: Direct reply or documentation search
+- **Query reformulation**: Optimized query for better retrieval
+- **Escalation check**: Flag for human handoff when needed
 
-**Current capabilities**: Handles Instagram Direct Messages and Telegram conversations with conversation memory, intelligent routing, and real-time monitoring.
+Built with clean channel-based architecture, making it straightforward to add support for additional messaging platforms.
+
+**Current status**: Telegram active in production. Instagram channels ready but disabled (requires Meta Advanced Access).
 
 ---
 
