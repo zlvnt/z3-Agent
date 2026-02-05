@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     
     # Telegram Alert Configuration
     TELEGRAM_ALERT_CHAT_ID: Optional[str] = Field(None, alias="TELEGRAM_ALERT_CHAT_ID")
+
+    # Telegram CS Group for HITL Escalation
+    TELEGRAM_CS_GROUP_CHAT_ID: Optional[str] = Field(None, alias="TELEGRAM_CS_GROUP_CHAT_ID")
     ALERT_ERROR_RATE_THRESHOLD: float = Field(0.10, alias="ALERT_ERROR_RATE_THRESHOLD")
     ALERT_RESPONSE_TIME_THRESHOLD: float = Field(5.0, alias="ALERT_RESPONSE_TIME_THRESHOLD")  
     ALERT_COOLDOWN_MINUTES: int = Field(15, alias="ALERT_COOLDOWN_MINUTES")

@@ -276,3 +276,15 @@ async def process_message_with_core(text: str, history: str = "") -> str:
     inputs = {"text": text, "history": history}
     result = await chain.ainvoke(inputs)
     return result.get("reply", "Mohon maaf, terjadi kendala. Silakan coba lagi.")
+
+
+async def process_message_with_core_full(text: str, history: str = "") -> Dict[str, Any]:
+    """
+    Process message through core chain, returning full result dict.
+
+    Includes escalation metadata (escalated, escalation_reason, etc.)
+    Used by TelegramChannel for HITL escalation handling.
+    """
+    chain = get_core_chain()
+    inputs = {"text": text, "history": history}
+    return await chain.ainvoke(inputs)

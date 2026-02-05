@@ -73,12 +73,12 @@ class TelegramChannel(BaseChannel):
             
             print(f"📨 Processing Telegram message: {message_data['message_text'][:50]}... from @{message_data.get('username', 'unknown')}")
             
-            # Step 5: Process through core AI system (will implement after core chain is ready)
-            # For now, use a placeholder response
+            # Step 5: Process through core AI system
             reply = await self._process_with_core_system(
                 text=message_data['message_text'],
                 history=history,
-                session_id=session_id
+                session_id=session_id,
+                message_data=message_data
             )
             
             # Step 6: Send reply back to Telegram
@@ -295,34 +295,75 @@ class TelegramChannel(BaseChannel):
         
         return True
     
-    async def _process_with_core_system(self, text: str, history: str, session_id: str) -> str:
+    async def _process_with_core_system(
+        self, text: str, history: str, session_id: str, message_data: Dict[str, Any] = None
+    ) -> str:
         """
         Process message through core AI system.
-        
-        Uses the new CoreChain for channel-agnostic AI processing.
-        
+
+        Uses CoreChain for AI processing and handles HITL escalation
+        by notifying the CS group when escalation is triggered.
+
         Args:
             text: User message text
             history: Formatted conversation history
             session_id: Unique session identifier
-            
+            message_data: Telegram message data (user_id, username, chat_id, etc.)
+
         Returns:
             str: AI-generated reply
         """
         try:
-            from app.core.chain import process_message_with_core
-            
-            # Process through core chain
-            reply = await process_message_with_core(
+            from app.core.chain import process_message_with_core_full
+
+            result = await process_message_with_core_full(
                 text=text,
                 history=history
             )
-            
+
+            reply = result.get("reply", "Mohon maaf, terjadi kendala. Silakan coba lagi.")
+
+            # HITL: notify CS group on escalation (fire-and-forget)
+            if result.get("escalated", False) and message_data:
+                asyncio.create_task(
+                    self._notify_escalation(result, session_id, history, message_data)
+                )
+
             return reply
-                
+
         except Exception as e:
             print(f"❌ Error in core system processing: {e}")
             return "Sorry, I encountered an issue processing your message. Please try again."
+
+    async def _notify_escalation(
+        self,
+        escalation_result: Dict[str, Any],
+        session_id: str,
+        history: str,
+        message_data: Dict[str, Any]
+    ) -> None:
+        """
+        Fire-and-forget CS group notification on escalation.
+        Failures are logged but never propagated.
+        """
+        try:
+            from app.channels.telegram.escalation import notify_cs_group
+
+            user_info = {
+                'user_id': message_data.get('user_id', 'unknown'),
+                'username': message_data.get('username', 'unknown'),
+                'chat_id': message_data.get('chat_id', 'unknown'),
+                'message_id': message_data.get('message_id'),
+                'session_id': session_id,
+            }
+
+            await notify_cs_group(
+                user_info=user_info,
+                escalation_result=escalation_result,
+                history_snippet=history
+            )
+        except Exception as e:
+            print(f"WARNING: Escalation notification failed (non-blocking): {e}")
     
     async def get_memory_stats(self, session_id: str) -> Dict[str, Any]:
         """
