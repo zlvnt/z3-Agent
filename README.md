@@ -150,7 +150,7 @@ Alerts trigger when error rates exceed 10% or response times exceed 5 seconds, w
 - Multi-channel support (Instagram, Telegram) with unified interface
 - Unified Processor for routing, reformulation, and escalation in single LLM call
 - RAG with reranker and quality gates for high-precision retrieval
-- Human-in-the-loop escalation when retrieval confidence is low
+- Human-in-the-loop escalation with Telegram CS group notification
 - Conversation memory with channel-specific storage
 - Async webhook processing with background tasks
 - Monitoring with Telegram alerts and Streamlit dashboard
@@ -158,7 +158,7 @@ Alerts trigger when error rates exceed 10% or response times exceed 5 seconds, w
 - Railway deployment ready with optimized Docker image
 
 ### 🚧 In Development
-Webhook signature verification, HITL ticketing integration, load testing.
+Webhook signature verification, HITL ticketing integration, CS response tracking.
 
 ### 🎯 Future Plans
 Additional channels (WhatsApp, Discord), advanced analytics, response caching, A/B testing, fine-tuned embeddings.
