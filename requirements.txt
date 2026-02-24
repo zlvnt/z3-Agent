@@ -1,0 +1,40 @@
+
+# Core Framework
+fastapi==0.115.14
+uvicorn==0.35.0
+pydantic==2.11.7
+pydantic-settings==2.10.1
+python-dotenv==1.0.1
+
+# LLM & AI Framework
+langchain==0.3.25
+langchain-core==0.3.64
+langchain-community==0.3.24
+langchain-google-genai==2.1.5
+langchain-huggingface==0.1.2  # For MPNet embeddings
+google-genai==1.20.0
+
+# RAG System
+faiss-cpu==1.11.0
+sentence-transformers==3.3.1  # MPNet model
+FlagEmbedding==1.2.10  # BGE reranker (+5.7% precision)
+PyYAML==6.0.2  # YAML config loader
+
+# HTTP & Web
+httpx==0.28.1
+requests==2.32.3
+aiohttp==3.11.18
+duckduckgo-search  # Web search functionality
+
+# Database Drivers
+psycopg2-binary==2.9.10  # PostgreSQL driver for LangChain memory
+
+# Monitoring & Dashboard (Optional)
+streamlit  # Real-time monitoring dashboard
+pandas  # Dashboard data processing
+plotly  # Dashboard visualizations
+
+
+# Development & Testing (Optional)
+pytest==8.4.1
+

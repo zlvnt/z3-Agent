@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: z3-app
+    ports:
+      - "8000:8000"
+    environment:
+      # Override DATABASE_URL to use internal network hostname
+      DATABASE_URL: postgresql://z3user:dev123@postgres:5432/z3_agent_dev
+    env_file:
+      - .env
+    volumes:
+      # Mount source code for hot reload
+      - ./app:/app/app:ro
+      - ./content:/app/content:ro
+      - ./templates:/app/templates:ro
+      - ./prompts:/app/prompts:ro
+      # Persistent data directories
+      - app-data:/app/data
+      - app-logs:/app/logs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: z3-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    volumes:
+      - ./frontend/src:/app/src:ro
+    depends_on:
+      - app
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17
+    container_name: z3-postgres-dev
+    environment:
+      POSTGRES_DB: z3_agent_dev
+      POSTGRES_USER: z3user
+      POSTGRES_PASSWORD: dev123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U z3user -d z3_agent_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+volumes:
+  postgres-data:
+    driver: local
+  app-data:
+    driver: local
+  app-logs:
+    driver: local
