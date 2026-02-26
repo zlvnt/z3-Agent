@@ -5,6 +5,8 @@ import type {
   HealthResponse,
   AgentConfig,
   RequestLogEntry,
+  RAGTestRequest,
+  RAGTestResponse,
 } from "./types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -42,5 +44,12 @@ export const api = {
 
   getConfig(): Promise<AgentConfig> {
     return request<AgentConfig>("/api/config");
+  },
+
+  testRAG(req: RAGTestRequest): Promise<RAGTestResponse> {
+    return request<RAGTestResponse>("/api/rag/test", {
+      method: "POST",
+      body: JSON.stringify(req),
+    });
   },
 };

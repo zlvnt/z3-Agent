@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/chat", label: "Chat", icon: "💬" },
+  { href: "/rag-test", label: "RAG Test", icon: "🔬" },
   { href: "/dashboard", label: "Dashboard", icon: "📊" },
   { href: "/config", label: "Config", icon: "⚙️" },
 ];

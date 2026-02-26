@@ -108,6 +108,33 @@ export interface AgentConfig {
   enable_adaptive_fallback: boolean;
 }
 
+// RAG Test
+export interface RAGTestRequest {
+  query: string;
+  mode?: string;
+  k_docs?: number;
+  use_reranker?: boolean;
+  reranker_top_k?: number;
+  skip_unified_processor?: boolean;
+}
+
+export interface DocumentResult {
+  content: string;
+  source?: string;
+  reranker_score?: number;
+}
+
+export interface RAGTestResponse {
+  unified_processor?: Record<string, unknown>;
+  raw_documents: DocumentResult[];
+  reranked_documents: DocumentResult[];
+  quality_gate?: Record<string, unknown>;
+  final_context: string;
+  config_used: Record<string, unknown>;
+  processing_time_ms: number;
+  error?: string;
+}
+
 // Request Log
 export interface RequestLogEntry {
   timestamp: string;
