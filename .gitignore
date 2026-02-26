@@ -5,6 +5,7 @@
 .venv/
 .env
 .activate_project
+.teds/
 reply-prompt.txt
 supervisor-prompt.txt
 model_rf.pkl
