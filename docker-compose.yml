@@ -17,9 +17,11 @@ services:
       - ./content:/app/content:ro
       - ./templates:/app/templates:ro
       - ./prompts:/app/prompts:ro
+      - ./docs:/app/docs:ro
       # Persistent data directories
       - app-data:/app/data
       - app-logs:/app/logs
+      - hf-cache:/app/.cache/huggingface
     depends_on:
       postgres:
         condition: service_healthy
@@ -65,4 +67,6 @@ volumes:
   app-data:
     driver: local
   app-logs:
+    driver: local
+  hf-cache:
     driver: local

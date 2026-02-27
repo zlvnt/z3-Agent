@@ -80,7 +80,7 @@ export default function RAGTestPage() {
   }
 
   return (
-    <div className="space-y-4 max-w-4xl">
+    <div className="space-y-4 max-w-4xl h-full overflow-y-auto p-4">
       <h1 className="text-xl font-bold text-white">RAG Test</h1>
       <p className="text-sm text-zinc-500">
         Debug RAG pipeline step-by-step. See retrieved docs, reranker scores, and quality gate.
