@@ -6,6 +6,7 @@ print(">> imported app.api root")
 from app.channels.telegram.webhook import router as telegram_router
 from app.api.chat import router as chat_router
 from app.api.rag_test import router as rag_test_router
+from app.api.tickets import router as tickets_router
 print(">> imported webhook routers")
 
 router = APIRouter()
@@ -15,5 +16,6 @@ router = APIRouter()
 router.include_router(telegram_router, tags=["telegram"])
 router.include_router(chat_router, tags=["chat"])
 router.include_router(rag_test_router, tags=["rag-test"])
+router.include_router(tickets_router, tags=["tickets"])
 
 __all__ = ["router"]

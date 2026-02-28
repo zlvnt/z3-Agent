@@ -64,6 +64,24 @@ async def chat(request: ChatRequest):
         bot_reply=reply,
     )
 
+    # HITL: create ticket on escalation (non-blocking)
+    if result.get("escalated", False):
+        try:
+            from app.services.ticket_service import get_ticket_service
+            service = get_ticket_service()
+            service.create_ticket(
+                channel="web",
+                session_id=session_id,
+                username=request.session_id,
+                escalation_stage=result.get('escalation_stage', 'unknown'),
+                escalation_reason=result.get('escalation_reason', 'Unknown'),
+                original_query=request.message,
+                history_snippet=history[:500] if history else None,
+                quality_score=result.get('quality_score'),
+            )
+        except Exception:
+            pass  # Non-blocking
+
     # Record metrics
     duration = time.time() - start_time
     success = result.get("routing_decision") != "error"

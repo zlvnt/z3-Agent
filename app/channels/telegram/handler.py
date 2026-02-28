@@ -323,10 +323,13 @@ class TelegramChannel(BaseChannel):
 
             reply = result.get("reply", "Mohon maaf, terjadi kendala. Silakan coba lagi.")
 
-            # HITL: notify CS group on escalation (fire-and-forget)
+            # HITL: notify CS group + create ticket on escalation (fire-and-forget)
             if result.get("escalated", False) and message_data:
                 asyncio.create_task(
                     self._notify_escalation(result, session_id, history, message_data)
+                )
+                asyncio.create_task(
+                    self._create_escalation_ticket(result, session_id, history, message_data)
                 )
 
             return reply
@@ -365,6 +368,34 @@ class TelegramChannel(BaseChannel):
         except Exception as e:
             print(f"WARNING: Escalation notification failed (non-blocking): {e}")
     
+    async def _create_escalation_ticket(
+        self,
+        escalation_result: Dict[str, Any],
+        session_id: str,
+        history: str,
+        message_data: Dict[str, Any]
+    ) -> None:
+        """Fire-and-forget ticket creation on escalation."""
+        try:
+            from app.services.ticket_service import get_ticket_service
+            service = get_ticket_service()
+            ticket_id = service.create_ticket(
+                channel="telegram",
+                session_id=session_id,
+                user_id=str(message_data.get('user_id', '')),
+                username=message_data.get('username'),
+                chat_id=str(message_data.get('chat_id', '')),
+                escalation_stage=escalation_result.get('escalation_stage', 'unknown'),
+                escalation_reason=escalation_result.get('escalation_reason', 'Unknown'),
+                original_query=escalation_result.get('original_query', ''),
+                history_snippet=history[:500] if history else None,
+                quality_score=escalation_result.get('quality_score'),
+            )
+            if ticket_id:
+                print(f"🎫 Ticket created: {ticket_id} for @{message_data.get('username', 'unknown')}")
+        except Exception as e:
+            print(f"WARNING: Ticket creation failed (non-blocking): {e}")
+
     async def get_memory_stats(self, session_id: str) -> Dict[str, Any]:
         """
         Get memory statistics for this conversation.

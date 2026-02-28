@@ -6,6 +6,10 @@ const VARIANTS: Record<string, string> = {
   docs: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
   escalate: "bg-red-500/20 text-red-300 border-red-500/30",
   error: "bg-red-500/20 text-red-300 border-red-500/30",
+  open: "bg-amber-500/20 text-amber-300 border-amber-500/30",
+  in_progress: "bg-blue-500/20 text-blue-300 border-blue-500/30",
+  resolved: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
+  closed: "bg-zinc-500/20 text-zinc-300 border-zinc-500/30",
   default: "bg-zinc-500/20 text-zinc-300 border-zinc-500/30",
 };
 

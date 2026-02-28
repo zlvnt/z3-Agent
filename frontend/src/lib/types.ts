@@ -135,6 +135,49 @@ export interface RAGTestResponse {
   error?: string;
 }
 
+// Tickets
+export interface Ticket {
+  id: string;
+  created_at?: string;
+  updated_at?: string;
+  status: "open" | "in_progress" | "resolved" | "closed";
+  channel: string;
+  session_id: string;
+  user_id?: string;
+  username?: string;
+  chat_id?: string;
+  escalation_stage: string;
+  escalation_reason: string;
+  original_query: string;
+  history_snippet?: string;
+  quality_score?: number;
+  assigned_to?: string;
+  resolution_note?: string;
+  resolved_at?: string;
+}
+
+export interface TicketListResponse {
+  tickets: Ticket[];
+  total: number;
+  page: number;
+  page_size: number;
+}
+
+export interface TicketUpdateRequest {
+  status?: string;
+  assigned_to?: string;
+  resolution_note?: string;
+}
+
+export interface TicketStats {
+  total: number;
+  open: number;
+  in_progress: number;
+  resolved: number;
+  closed: number;
+  avg_resolution_time_hours?: number;
+}
+
 // Request Log
 export interface RequestLogEntry {
   timestamp: string;
