@@ -5,7 +5,7 @@
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
-![Gemini](https://img.shields.io/badge/Gemini-2.5_Flash-yellow)
+![Gemini](https://img.shields.io/badge/Gemini-yellow)
 
 ## Features
 
