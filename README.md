@@ -1,6 +1,6 @@
 # z3-Agent
 
-### ✨ AI Agent for Customer Support Across Any Messaging Channel
+### AI Agent for Customer Support Across Any Messaging Channel
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green)
