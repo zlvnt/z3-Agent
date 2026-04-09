@@ -1,6 +1,6 @@
 # z3-Agent
 
-> AI-powered Customer Service & Social Media Agent for Telegram
+### ✨ AI Agent for Customer Support Across Any Messaging Channel
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green)
@@ -9,8 +9,8 @@
 
 ## Features
 
-- **Dual Agent Mode** — Social (casual replies) or CS (full RAG + escalation)
-- **Unified Processor** — Single LLM call for routing, query reformulation, and escalation detection
+- **Unified Processor** — First LLM call for routing, query reformulation, and escalation detection
+- **Reply Generation** — Second LLM call to generate final response with RAG context
 - **RAG Pipeline** — FAISS vector search + BGE cross-encoder reranker
 - **Quality Gate** — Confidence scoring: `proceed` / `proceed_with_flag` / `escalate`
 - **HITL Ticketing** — Auto-create tickets on escalation, CS group notifications, admin panel
@@ -25,18 +25,18 @@
 User Message
   │
   ▼
-Unified Processor (Gemini 2.5 Flash)
+Unified Processor — 1st LLM call (Gemini 2.5 Flash)
   ├─ routing_decision: direct | docs
   ├─ reformulated_query
   └─ escalate: true/false
       │
-      ├─ [direct] ──────────────────────▶ Reply Generation
+      ├─ [direct] ──────────────────────▶ Reply Generation — 2nd LLM call
       │
       ├─ [docs] ──▶ FAISS Retrieval ──▶ BGE Reranker ──▶ Quality Gate
       │                                                      │
-      │                                    [proceed] ◀───────┤
+      │                                    [proceed] ◀───────┤──▶ Reply Generation — 2nd LLM call
       │                                                      │
-      │                              [proceed_with_flag] ◀───┤
+      │                              [proceed_with_flag] ◀───┤──▶ Reply Generation — 2nd LLM call
       │                                                      │
       │                                   [escalate] ◀───────┘
       │                                       │
@@ -87,7 +87,7 @@ z3-Agent/
 │   │       ├── escalation.py    # CS group notifications
 │   │       └── webhook.py       # Webhook endpoints
 │   ├── core/
-│   │   ├── chain.py             # CoreChain (mode switching)
+│   │   ├── chain.py             # CoreChain
 │   │   ├── unified_processor.py # Routing + reformulation
 │   │   ├── rag.py               # RAG + quality gate
 │   │   ├── reranker.py          # BGE cross-encoder
