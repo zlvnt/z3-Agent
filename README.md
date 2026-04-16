@@ -6,6 +6,7 @@
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green)
 ![Next.js](https://img.shields.io/badge/Next.js-16-black)
 ![Gemini](https://img.shields.io/badge/Gemini-yellow)
+![License](https://img.shields.io/badge/License-MIT-green)
 
 ## Features
 
@@ -103,5 +104,9 @@ z3-Agent/
 ├── Dockerfile
 └── requirements.txt
 ```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
