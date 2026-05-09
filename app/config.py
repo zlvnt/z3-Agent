@@ -92,13 +92,6 @@ class Settings(BaseSettings):
     REQUEST_LOG_FILE: str = Field("logs/requests.jsonl", alias="REQUEST_LOG_FILE")
     REQUEST_LOG_MAX_QUERY_LENGTH: int = Field(100, alias="REQUEST_LOG_MAX_QUERY_LENGTH")
 
-    # Path config
-    CONVERSATIONS_PATH: str = Field("data/conversations.json", alias="CONVERSATIONS_PATH")
-
-    # Pr path
-    REPLY_PROMPT_PATH: str = Field("content/reply-prompt.txt", alias="REPLY_PROMPT_PATH")
-    SUPERVISOR_PROMPT_PATH: str = Field("content/supervisor-prompt.txt", alias="SUPERVISOR_PROMPT_PATH")
-
     # Graph API Version
     GRAPH_API_VERSION: str = Field("24.0", alias="GRAPH_API_VERSION")
     INSTAGRAM_API_BASE_URL: str = Field("https://graph.facebook.com", alias="INSTAGRAM_API_BASE_URL")

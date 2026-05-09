@@ -7,7 +7,6 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_google_genai import ChatGoogleGenerativeAI
 
 from app.config import settings
-from app.services.conversation import add as save_conv
 
 
 def _get_reply_config_path() -> str:
@@ -87,53 +86,6 @@ def _get_llm() -> ChatGoogleGenerativeAI:
     )
 
 
-def generate_reply(
-    comment: str,
-    post_id: str,
-    comment_id: str,
-    username: str,
-    context: Optional[str] = "",
-    history_context: Optional[str] = None
-) -> str:
-    try:
-        # Use passed history_context or build internally as fallback
-        if history_context is None:
-            from app.services.history_service import ConversationHistoryService
-            history_context = ConversationHistoryService.get_optimized_history_for_reply(post_id, comment_id)
-        
-        # Use optimized customer service template
-        template_vars = _format_optimized_template(
-            comment=comment,
-            context=context or "",
-            history=history_context
-        )
-
-        messages = _get_reply_prompt_template().format_messages(**template_vars)
-        
-        # Show final prompt before LLM generation
-        print(f"🔍 FINAL PROMPT TO LLM:")
-        print(f"{'='*60}")
-        print(messages[0].content)
-        print(f"{'='*60}")
-        
-        ai_msg = _get_llm().invoke(messages)
-        reply = ai_msg.content.strip()
-        print(f"INFO: Generated professional CS reply - comment_id: {comment_id}")
-    except Exception as e:
-        print(f"ERROR: Professional CS reply failed - error: {e}")
-        reply = "Maaf, ada kendala teknis sementara. Tim kami akan segera membantu Anda. Terima kasih atas pengertiannya! 🙏"
-
-    # Simpan
-    save_conv(
-        post_id, comment_id, {
-            "user": username,
-            "comment": comment,
-            "reply": reply,
-        }
-    )
-    return reply
-
-
 def generate_telegram_reply(
     comment: str,
     context: Optional[str] = "",
@@ -163,7 +115,6 @@ def generate_telegram_reply(
         print(f"ERROR: Telegram reply generation failed - error: {e}")
         reply = "Sorry, I encountered an issue processing your message. Please try again."
 
-    # NO save_conv() call - Telegram uses its own memory system
     return reply
 
 
